@@ -37,7 +37,7 @@ import {
 } from "@plannotator/server/annotate";
 import { getGitContext, runGitDiff } from "@plannotator/server/git";
 import { writeRemoteShareLink } from "@plannotator/server/share-url";
-import path from "path";
+import { resolveMarkdownFile } from "@plannotator/server/resolve-file";
 
 // Embed the built HTML at compile time
 // @ts-ignore - Bun import attribute for text
@@ -123,30 +123,32 @@ if (args[0] === "review") {
     filePath = filePath.slice(1);
   }
 
-  // Resolve path - use PLANNOTATOR_CWD if set (original working directory before script cd'd)
-  const originalCwd = process.env.PLANNOTATOR_CWD || process.cwd();
+  // Use PLANNOTATOR_CWD if set (original working directory before script cd'd)
+  const projectRoot = process.env.PLANNOTATOR_CWD || process.cwd();
 
-  // Debug: log path resolution (visible in stderr, won't interfere with stdout JSON)
   if (process.env.PLANNOTATOR_DEBUG) {
-    console.error(`[DEBUG] Original CWD: ${originalCwd}`);
+    console.error(`[DEBUG] Project root: ${projectRoot}`);
     console.error(`[DEBUG] File path arg: ${filePath}`);
   }
 
-  const absolutePath = path.isAbsolute(filePath)
-    ? filePath
-    : path.join(originalCwd, filePath);
+  // Smart file resolution: exact path, case-insensitive relative, or bare filename search
+  const resolved = await resolveMarkdownFile(filePath, projectRoot);
 
-  if (process.env.PLANNOTATOR_DEBUG) {
-    console.error(`[DEBUG] Resolved path: ${absolutePath}`);
-  }
-
-  // Read the markdown file
-  const file = Bun.file(absolutePath);
-  if (!(await file.exists())) {
-    console.error(`File not found: ${absolutePath}`);
+  if (resolved.kind === "ambiguous") {
+    console.error(`Ambiguous filename "${resolved.input}" — found ${resolved.matches.length} matches:`);
+    for (const match of resolved.matches) {
+      console.error(`  ${match}`);
+    }
     process.exit(1);
   }
-  const markdown = await file.text();
+  if (resolved.kind === "not_found") {
+    console.error(`File not found: ${resolved.input}`);
+    process.exit(1);
+  }
+
+  const absolutePath = resolved.path;
+  console.error(`Resolved: ${absolutePath}`);
+  const markdown = await Bun.file(absolutePath).text();
 
   // Start the annotate server (reuses plan editor HTML)
   const server = await startAnnotateServer({

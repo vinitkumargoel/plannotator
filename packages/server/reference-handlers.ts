@@ -8,6 +8,7 @@
 import { existsSync, statSync } from "fs";
 import { resolve } from "path";
 import { detectObsidianVaults } from "./integrations";
+import { resolveMarkdownFile } from "./resolve-file";
 
 // --- Vault file tree helpers ---
 
@@ -73,65 +74,22 @@ export async function handleDoc(req: Request): Promise<Response> {
   }
 
   const projectRoot = process.cwd();
+  const result = await resolveMarkdownFile(requestedPath, projectRoot);
 
-  // Restrict to markdown files only
-  if (!/\.mdx?$/i.test(requestedPath)) {
-    return Response.json({ error: "Only .md and .mdx files are supported" }, { status: 400 });
+  if (result.kind === "ambiguous") {
+    return Response.json(
+      { error: `Ambiguous filename '${result.input}': found ${result.matches.length} matches`, matches: result.matches },
+      { status: 400 },
+    );
   }
 
-  // Path resolution: 3 strategies in order
-  let resolvedPath: string | null = null;
-
-  if (requestedPath.startsWith("/")) {
-    // 1. Absolute path
-    resolvedPath = requestedPath;
-  } else {
-    // 2. Relative to project root
-    const fromRoot = resolve(projectRoot, requestedPath);
-    if (await Bun.file(fromRoot).exists()) {
-      resolvedPath = fromRoot;
-    }
-
-    // 3. Bare filename — search entire project for unique match
-    if (!resolvedPath && !requestedPath.includes("/")) {
-      const glob = new Bun.Glob(`**/${requestedPath}`);
-      const matches: string[] = [];
-      for await (const match of glob.scan({ cwd: projectRoot, onlyFiles: true })) {
-        if (match.includes("node_modules/") || match.includes(".git/")) continue;
-        if (match.split("/").pop() === requestedPath) {
-          matches.push(resolve(projectRoot, match));
-        }
-      }
-      if (matches.length === 1) {
-        resolvedPath = matches[0];
-      } else if (matches.length > 1) {
-        const relativePaths = matches.map((m) => m.replace(projectRoot + "/", ""));
-        return Response.json(
-          { error: `Ambiguous filename '${requestedPath}': found ${matches.length} matches`, matches: relativePaths },
-          { status: 400 },
-        );
-      }
-    }
-  }
-
-  if (!resolvedPath) {
-    return Response.json({ error: `File not found: ${requestedPath}` }, { status: 404 });
-  }
-
-  // Security: path must stay within projectRoot
-  const normalised = resolve(resolvedPath);
-  if (!normalised.startsWith(projectRoot + "/") && normalised !== projectRoot) {
-    return Response.json({ error: "Access denied: path is outside project root" }, { status: 403 });
-  }
-
-  const file = Bun.file(normalised);
-  if (!(await file.exists())) {
-    return Response.json({ error: `File not found: ${requestedPath}` }, { status: 404 });
+  if (result.kind === "not_found") {
+    return Response.json({ error: `File not found: ${result.input}` }, { status: 404 });
   }
 
   try {
-    const markdown = await file.text();
-    return Response.json({ markdown, filepath: normalised });
+    const markdown = await Bun.file(result.path).text();
+    return Response.json({ markdown, filepath: result.path });
   } catch {
     return Response.json({ error: "Failed to read file" }, { status: 500 });
   }

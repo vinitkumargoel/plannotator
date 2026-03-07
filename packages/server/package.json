@@ -14,7 +14,8 @@
     "./storage": "./storage.ts",
     "./git": "./git.ts",
     "./repo": "./repo.ts",
-    "./share-url": "./share-url.ts"
+    "./share-url": "./share-url.ts",
+    "./resolve-file": "./resolve-file.ts"
   },
   "files": [
     "*.ts"

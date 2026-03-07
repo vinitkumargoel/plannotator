@@ -28,6 +28,7 @@ import {
 } from "@plannotator/server/annotate";
 import { getGitContext, runGitDiff } from "@plannotator/server/git";
 import { writeRemoteShareLink } from "@plannotator/server/share-url";
+import { resolveMarkdownFile } from "@plannotator/server/resolve-file";
 
 // @ts-ignore - Bun import attribute for text
 import indexHtml from "./plannotator.html" with { type: "text" };
@@ -261,20 +262,31 @@ Do NOT proceed with implementation until your plan is approved.
           message: `Opening annotation UI for ${filePath}...`,
         });
 
-        // Resolve to absolute path
-        const path = await import("path");
-        const absolutePath = path.resolve(filePath);
+        // Smart file resolution: exact path, case-insensitive relative, or bare filename
+        const projectRoot = process.cwd();
+        const resolved = await resolveMarkdownFile(filePath, projectRoot);
 
-        // Read the markdown file
-        const file = Bun.file(absolutePath);
-        if (!(await file.exists())) {
+        if (resolved.kind === "ambiguous") {
           ctx.client.app.log({
             level: "error",
-            message: `File not found: ${absolutePath}`,
+            message: `Ambiguous filename "${resolved.input}" — found ${resolved.matches.length} matches:\n${resolved.matches.map((m) => `  ${m}`).join("\n")}`,
           });
           return;
         }
-        const markdown = await file.text();
+        if (resolved.kind === "not_found") {
+          ctx.client.app.log({
+            level: "error",
+            message: `File not found: ${resolved.input}`,
+          });
+          return;
+        }
+
+        const absolutePath = resolved.path;
+        ctx.client.app.log({
+          level: "info",
+          message: `Resolved: ${absolutePath}`,
+        });
+        const markdown = await Bun.file(absolutePath).text();
 
         // Start annotate server (reuses plan editor HTML)
         const server = await startAnnotateServer({
