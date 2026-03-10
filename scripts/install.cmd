@@ -155,6 +155,14 @@ echo }
     echo Updated plugin hooks at !PLUGIN_HOOKS!
 )
 
+REM Update Pi extension if pi is installed
+where pi >nul 2>&1
+if !ERRORLEVEL! equ 0 (
+    echo Updating Pi extension...
+    pi install npm:@plannotator/pi-extension
+    echo Pi extension updated.
+)
+
 REM Install /review slash command
 if defined CLAUDE_CONFIG_DIR (
     set "CLAUDE_COMMANDS_DIR=%CLAUDE_CONFIG_DIR%\commands"

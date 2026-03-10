@@ -110,6 +110,13 @@ if (Test-Path $pluginHooks) {
 Remove-Item -Recurse -Force "$env:USERPROFILE\.cache\opencode\node_modules\@plannotator" -ErrorAction SilentlyContinue
 Remove-Item -Recurse -Force "$env:USERPROFILE\.bun\install\cache\@plannotator" -ErrorAction SilentlyContinue
 
+# Update Pi extension if pi is installed
+if (Get-Command pi -ErrorAction SilentlyContinue) {
+    Write-Host "Updating Pi extension..."
+    pi install npm:@plannotator/pi-extension
+    Write-Host "Pi extension updated."
+}
+
 # Install Claude Code slash command
 $claudeCommandsDir = if ($env:CLAUDE_CONFIG_DIR) { "$env:CLAUDE_CONFIG_DIR\commands" } else { "$env:USERPROFILE\.claude\commands" }
 New-Item -ItemType Directory -Force -Path $claudeCommandsDir | Out-Null
