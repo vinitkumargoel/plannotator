@@ -49,10 +49,11 @@ export interface RenderedMessage {
 
 /**
  * Derive the project slug from a working directory path.
- * Claude Code uses the absolute path with `/` replaced by `-` (leading `-` kept).
+ * Claude Code replaces every character outside [a-zA-Z0-9-] with `-`.
+ * On Windows it also lowercases drive letters (C: → c-).
  */
 export function projectSlugFromCwd(cwd: string): string {
-  return cwd.replace(/\//g, "-");
+  return cwd.replace(/[^a-zA-Z0-9-]/g, "-");
 }
 
 /**
@@ -88,11 +89,36 @@ export function findSessionLogs(projectDir: string): string[] {
 /**
  * Find session log candidates for a given working directory.
  * Returns all .jsonl paths sorted by mtime (most recent first).
+ *
+ * Tries the exact slug first, then a case-insensitive match. On Windows,
+ * Claude Code lowercases the entire slug (e.g. `C-Users-...` → `c-users-...`)
+ * while our cwd may have mixed case. The fallback scans the projects directory
+ * for a case-insensitive match.
  */
 export function findSessionLogsForCwd(cwd: string): string[] {
   const slug = projectSlugFromCwd(cwd);
-  const projectDir = join(homedir(), ".claude", "projects", slug);
-  return findSessionLogs(projectDir);
+  const projectsDir = join(homedir(), ".claude", "projects");
+  const projectDir = join(projectsDir, slug);
+
+  // Try exact match first
+  const logs = findSessionLogs(projectDir);
+  if (logs.length > 0) return logs;
+
+  // Fallback: case-insensitive directory scan (handles Windows drive letter casing)
+  const slugLower = slug.toLowerCase();
+  try {
+    const dirs = readdirSync(projectsDir);
+    for (const dir of dirs) {
+      if (dir.toLowerCase() === slugLower) {
+        const fallbackLogs = findSessionLogs(join(projectsDir, dir));
+        if (fallbackLogs.length > 0) return fallbackLogs;
+      }
+    }
+  } catch {
+    // projectsDir doesn't exist
+  }
+
+  return [];
 }
 
 // --- Log Parsing ---

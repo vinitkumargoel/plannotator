@@ -160,7 +160,7 @@ function buildLog(...lines: string[]): string {
 // --- Tests ---
 
 describe("projectSlugFromCwd", () => {
-  test("converts absolute path to slug", () => {
+  test("converts Unix absolute path to slug", () => {
     expect(projectSlugFromCwd("/Users/ramos/cupcake/cupcake-rego/feat-annotate-last")).toBe(
       "-Users-ramos-cupcake-cupcake-rego-feat-annotate-last"
     );
@@ -168,6 +168,36 @@ describe("projectSlugFromCwd", () => {
 
   test("handles root path", () => {
     expect(projectSlugFromCwd("/")).toBe("-");
+  });
+
+  test("converts Windows backslashes to dashes", () => {
+    expect(projectSlugFromCwd("C:\\Users\\alexey\\Documents\\project")).toBe(
+      "C--Users-alexey-Documents-project"
+    );
+  });
+
+  test("converts non-ASCII characters (Cyrillic) to dashes", () => {
+    expect(projectSlugFromCwd("C:\\Users\\alexey\\Documents\\1С_конфигурации\\ERP_Medicine")).toBe(
+      "C--Users-alexey-Documents-1---------------ERP-Medicine"
+    );
+  });
+
+  test("converts underscores to dashes", () => {
+    expect(projectSlugFromCwd("/home/user/my_project")).toBe(
+      "-home-user-my-project"
+    );
+  });
+
+  test("preserves hyphens and alphanumeric characters", () => {
+    expect(projectSlugFromCwd("/home/user/my-project-123")).toBe(
+      "-home-user-my-project-123"
+    );
+  });
+
+  test("converts spaces and special characters to dashes", () => {
+    expect(projectSlugFromCwd("/home/user/my project (v2)")).toBe(
+      "-home-user-my-project--v2-"
+    );
   });
 });
 
