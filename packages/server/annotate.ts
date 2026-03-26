@@ -16,6 +16,7 @@ import { getRepoInfo } from "./repo";
 import { handleImage, handleUpload, handleServerReady, handleDraftSave, handleDraftLoad, handleDraftDelete, handleFavicon } from "./shared-handlers";
 import { handleDoc, handleFileBrowserFiles } from "./reference-handlers";
 import { contentHash, deleteDraft } from "./draft";
+import { saveConfig, detectGitUser, getServerConfig } from "./config";
 import { dirname } from "path";
 import { isWSL } from "./browser";
 
@@ -97,6 +98,7 @@ export async function startAnnotateServer(
   const isRemote = isRemoteSession();
   const configuredPort = getServerPort();
   const wslFlag = await isWSL();
+  const gitUser = detectGitUser();
   const draftKey = contentHash(markdown);
 
   // Detect repo info (cached for this session)
@@ -138,7 +140,21 @@ export async function startAnnotateServer(
               repoInfo,
               projectRoot: folderPath || process.cwd(),
               isWSL: wslFlag,
+              serverConfig: getServerConfig(gitUser),
             });
+          }
+
+          // API: Update user config (write-back to ~/.plannotator/config.json)
+          if (url.pathname === "/api/config" && req.method === "POST") {
+            try {
+              const body = (await req.json()) as { displayName?: string };
+              if (body.displayName !== undefined) {
+                saveConfig({ displayName: body.displayName });
+              }
+              return Response.json({ ok: true });
+            } catch {
+              return Response.json({ error: "Invalid request" }, { status: 400 });
+            }
           }
 
           // API: Serve images (local paths or temp uploads)
