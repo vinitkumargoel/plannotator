@@ -12,16 +12,24 @@ export interface RepoInfo {
  * - SSH: git@github.com:org/repo.git
  * - HTTPS: https://github.com/org/repo.git
  * - SSH with port: ssh://git@github.com:22/org/repo.git
+ * - GitLab subgroups: git@gitlab.com:group/subgroup/project.git
  */
 export function parseRemoteUrl(url: string): string | null {
 	if (!url) return null;
 
-	// SSH format: git@github.com:org/repo.git
-	const sshMatch = url.match(/:([^/]+\/[^/]+?)(?:\.git)?$/);
-	if (sshMatch) return sshMatch[1];
+	// SSH with port: ssh://git@host:22/path.git — strip scheme+host+port
+	const sshPortMatch = url.match(/^ssh:\/\/[^/]+(?::\d+)?\/(.+?)(?:\.git)?$/);
+	if (sshPortMatch) return sshPortMatch[1];
 
-	// HTTPS format: https://github.com/org/repo.git
-	const httpsMatch = url.match(/\/([^/]+\/[^/]+?)(?:\.git)?$/);
+	// SSH format: git@host:path.git — capture full path after ':'
+	// Reject URLs with :// scheme (HTTPS with non-standard ports like :8443)
+	if (!url.includes("://")) {
+		const sshMatch = url.match(/:([^/][^:]*?)(?:\.git)?$/);
+		if (sshMatch) return sshMatch[1];
+	}
+
+	// HTTPS format: https://host/path.git — capture full path after host
+	const httpsMatch = url.match(/^https?:\/\/[^/]+\/(.+?)(?:\.git)?$/);
 	if (httpsMatch) return httpsMatch[1];
 
 	return null;
