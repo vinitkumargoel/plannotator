@@ -66,33 +66,37 @@ Plannotator lets you privately share plans, annotations, and feedback with colle
 **macOS / Linux / WSL:**
 
 ```bash
-# Latest release
 curl -fsSL https://plannotator.ai/install.sh | bash
-
-# Pin to a specific reviewed version
-curl -fsSL https://plannotator.ai/install.sh | bash -s -- --version vX.Y.Z
 ```
 
 **Windows PowerShell:**
 
 ```powershell
-# Latest release
 irm https://plannotator.ai/install.ps1 | iex
-
-# Pin to a specific reviewed version
-& ([scriptblock]::Create((irm https://plannotator.ai/install.ps1))) -Version vX.Y.Z
 ```
-
-Every released binary ships with a SHA256 sidecar (verified automatically on every install). Version pinning, native ARM64 Windows, and [SLSA provenance](https://slsa.dev/) are supported from v0.17.2 onwards — see the [installation docs](https://plannotator.ai/docs/getting-started/installation/#verifying-your-install) for details.
 
 **Then in Claude Code:**
 
 ```
 /plugin marketplace add backnotprop/plannotator
-/plugin install plannotator@plannotator
-
-# IMPORTANT: Restart Claude Code after plugin install
 ```
+
+Restart Claude Code after plugin install.
+
+<details>
+<summary>Pin a specific version or verify provenance</summary>
+
+```bash
+curl -fsSL https://plannotator.ai/install.sh | bash -s -- --version vX.Y.Z
+```
+
+```powershell
+& ([scriptblock]::Create((irm https://plannotator.ai/install.ps1))) -Version vX.Y.Z
+```
+
+Every released binary ships with a SHA256 sidecar (verified automatically). [SLSA provenance](https://slsa.dev/) verification is supported from v0.17.2 onwards — see the [installation docs](https://plannotator.ai/docs/getting-started/installation/#verifying-your-install) for details.
+
+</details>
 
 See [apps/hook/README.md](apps/hook/README.md) for detailed installation instructions including a `manual hook` approach.
 
