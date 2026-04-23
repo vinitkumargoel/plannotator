@@ -2,7 +2,7 @@
 title: "Continuously Improve Claude Code Plans"
 description: "Use your denial history to find feedback patterns, generate a personalized report, and automatically improve every future plan."
 date: 2026-04-01
-author: "backnotprop"
+author: "vinitkumargoel"
 tags: ["compound-planning", "plan-mode", "claude-code"]
 ---
 
@@ -12,9 +12,9 @@ tags: ["compound-planning", "plan-mode", "claude-code"]
   <source src="https://d17ygohy796f9l.cloudfront.net/videos/compound-planning.mp4" type="video/mp4" />
 </video>
 
-If you use plan mode and deny plans, you already have the data. The skill reads it and puts it to work. It works day one for any Claude Code user who has been actively using plan mode. [Plannotator](https://github.com/backnotprop/plannotator) users get an even richer analysis since Plannotator captures full plan text and inline annotations with every denial. Plannotator is [open source](https://github.com/backnotprop/plannotator) and free.
+If you use plan mode and deny plans, you already have the data. The skill reads it and puts it to work. It works day one for any Claude Code user who has been actively using plan mode. [Plannotator](https://github.com/vinitkumargoel/plannotator) users get an even richer analysis since Plannotator captures full plan text and inline annotations with every denial. Plannotator is [open source](https://github.com/vinitkumargoel/plannotator) and free.
 
-[Install Plannotator](https://github.com/backnotprop/plannotator?tab=readme-ov-file#install-for-claude-code), then run:
+[Install Plannotator](https://github.com/vinitkumargoel/plannotator?tab=readme-ov-file#install-for-claude-code), then run:
 
 ```
 /plannotator-compound
@@ -50,6 +50,6 @@ Your denied plans aren't wasted work. They're the specification for better plans
 
 ## Try it
 
-If you have [Plannotator](https://github.com/backnotprop/plannotator) installed, it works out of the box. If you're using Claude Code without Plannotator, the skill works with your existing session logs, no additional setup.
+If you have [Plannotator](https://github.com/vinitkumargoel/plannotator) installed, it works out of the box. If you're using Claude Code without Plannotator, the skill works with your existing session logs, no additional setup.
 
-The more denial history you have, the richer the analysis. Start with the [installation guide](/docs/getting-started/installation/) or check out the [repo](https://github.com/backnotprop/plannotator).
+The more denial history you have, the richer the analysis. Start with the [installation guide](/docs/getting-started/installation/) or check out the [repo](https://github.com/vinitkumargoel/plannotator).

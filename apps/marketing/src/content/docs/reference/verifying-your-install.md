@@ -12,31 +12,33 @@ Every released binary is accompanied by a SHA256 sidecar (verified automatically
 
 Recommended for one-off audits. Requires the [GitHub CLI](https://cli.github.com) installed and authenticated (`gh auth login`). Replace `vX.Y.Z` with the tag of the version you installed — pinning the source ref and signer workflow gives you the "exact commit and workflow run" guarantee; `--repo` alone only proves the artifact was built by _some_ workflow in our repository.
 
+If you install from another fork, replace `vinitkumargoel/plannotator` with that fork's `owner/repo` in all three commands below.
+
 **macOS / Linux:**
 
 ```bash
 gh attestation verify ~/.local/bin/plannotator \
-  --repo backnotprop/plannotator \
+  --repo vinitkumargoel/plannotator \
   --source-ref refs/tags/vX.Y.Z \
-  --signer-workflow backnotprop/plannotator/.github/workflows/release.yml
+  --signer-workflow vinitkumargoel/plannotator/.github/workflows/release.yml
 ```
 
 **Windows (PowerShell installer):**
 
 ```powershell
 gh attestation verify "$env:LOCALAPPDATA\plannotator\plannotator.exe" `
-  --repo backnotprop/plannotator `
+  --repo vinitkumargoel/plannotator `
   --source-ref refs/tags/vX.Y.Z `
-  --signer-workflow backnotprop/plannotator/.github/workflows/release.yml
+  --signer-workflow vinitkumargoel/plannotator/.github/workflows/release.yml
 ```
 
 **Windows (CMD installer):**
 
 ```cmd
 gh attestation verify "%USERPROFILE%\.local\bin\plannotator.exe" ^
-  --repo backnotprop/plannotator ^
+  --repo vinitkumargoel/plannotator ^
   --source-ref refs/tags/vX.Y.Z ^
-  --signer-workflow backnotprop/plannotator/.github/workflows/release.yml
+  --signer-workflow vinitkumargoel/plannotator/.github/workflows/release.yml
 ```
 
 For air-gapped or no-auth environments, see GitHub's docs on [verifying attestations offline](https://docs.github.com/en/actions/security-for-github-actions/using-artifact-attestations/verifying-attestations-offline).
@@ -48,7 +50,7 @@ Provenance verification is **off by default** — the same default every major `
 **1. Per-install flag** (one-shot):
 
 ```bash
-curl -fsSL https://plannotator.ai/install.sh | bash -s -- --verify-attestation
+curl -fsSL https://raw.githubusercontent.com/vinitkumargoel/plannotator/main/scripts/install.sh | bash -s -- --verify-attestation
 ```
 
 PowerShell: `... -VerifyAttestation`. Windows CMD: `install.cmd --verify-attestation`.

@@ -113,7 +113,7 @@ Annotates the agent's most recent message. See the [annotate last docs](/docs/co
 Install the CLI for slash command support:
 
 ```bash
-curl -fsSL https://plannotator.ai/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/vinitkumargoel/plannotator/main/scripts/install.sh | bash
 ```
 
 This also clears any cached plugin versions.

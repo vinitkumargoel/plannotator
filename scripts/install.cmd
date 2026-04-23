@@ -33,6 +33,21 @@ if /i "%~1"=="--version" (
     shift
     goto parse_args
 )
+if /i "%~1"=="--repo" (
+    if "%~2"=="" (
+        echo --repo requires an owner/repo argument >&2
+        exit /b 1
+    )
+    set "NEXT_ARG=%~2"
+    if "!NEXT_ARG:~0,1!"=="-" (
+        echo --repo requires an owner/repo value, got flag: "%~2" >&2
+        exit /b 1
+    )
+    set "REPO=%~2"
+    shift
+    shift
+    goto parse_args
+)
 if /i "%~1"=="--verify-attestation" (
     if "!VERIFY_ATTESTATION_FLAG!"=="0" (
         echo --verify-attestation and --skip-attestation are mutually exclusive >&2
@@ -81,7 +96,13 @@ shift
 goto parse_args
 :args_done
 
-set "REPO=backnotprop/plannotator"
+if not defined REPO (
+    if defined PLANNOTATOR_INSTALL_REPO (
+        set "REPO=%PLANNOTATOR_INSTALL_REPO%"
+    ) else (
+        set "REPO=vinitkumargoel/plannotator"
+    )
+)
 set "INSTALL_DIR=%USERPROFILE%\.local\bin"
 
 REM First plannotator release that carries SLSA build-provenance attestations.
@@ -153,6 +174,7 @@ if /i "!VERSION!"=="latest" (
 )
 
 echo Installing plannotator !TAG!...
+echo Source repo: !REPO!
 
 REM Resolve SLSA build-provenance verification opt-in BEFORE the download so
 REM we can fail fast without wasting bandwidth if the requested tag predates
@@ -304,7 +326,7 @@ if "!VERIFY_ATTESTATION!"=="1" (
         gh attestation verify "!TEMP_FILE!" ^
             --repo "!REPO!" ^
             --source-ref "refs/tags/!TAG!" ^
-            --signer-workflow "backnotprop/plannotator/.github/workflows/release.yml" ^
+            --signer-workflow "!REPO!/.github/workflows/release.yml" ^
             > "!GH_OUTPUT!" 2>&1
         if !ERRORLEVEL! neq 0 (
             type "!GH_OUTPUT!" >&2
@@ -588,7 +610,7 @@ echo Test the install:
 echo   echo {"tool_input":{"plan":"# Test Plan\\n\\nHello world"}} ^| plannotator
 echo.
 echo Then install the Claude Code plugin:
-echo   /plugin marketplace add backnotprop/plannotator
+echo   /plugin marketplace add !REPO!
 echo   /plugin install plannotator@plannotator
 echo.
 echo The /plannotator-review, /plannotator-annotate, and /plannotator-last commands are ready to use!

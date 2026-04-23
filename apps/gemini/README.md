@@ -9,13 +9,13 @@ Interactive plan review, code review, and markdown annotation for Google Gemini 
 **macOS / Linux / WSL:**
 
 ```bash
-curl -fsSL https://plannotator.ai/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/vinitkumargoel/plannotator/main/scripts/install.sh | bash
 ```
 
 **Windows PowerShell:**
 
 ```powershell
-irm https://plannotator.ai/install.ps1 | iex
+irm https://raw.githubusercontent.com/vinitkumargoel/plannotator/main/scripts/install.ps1 | iex
 ```
 
 The installer auto-detects Gemini CLI (checks for `~/.gemini`) and configures:
@@ -85,5 +85,5 @@ If the installer didn't auto-configure your settings (e.g. `~/.gemini/settings.j
 ## Links
 
 - [Website](https://plannotator.ai)
-- [GitHub](https://github.com/backnotprop/plannotator)
+- [GitHub](https://github.com/vinitkumargoel/plannotator)
 - [Docs](https://plannotator.ai/docs/getting-started/installation/)

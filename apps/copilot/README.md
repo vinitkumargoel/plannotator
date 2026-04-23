@@ -9,19 +9,19 @@ Interactive plan review, code review, and markdown annotation for GitHub Copilot
 **macOS / Linux / WSL:**
 
 ```bash
-curl -fsSL https://plannotator.ai/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/vinitkumargoel/plannotator/main/scripts/install.sh | bash
 ```
 
 **Windows PowerShell:**
 
 ```powershell
-irm https://plannotator.ai/install.ps1 | iex
+irm https://raw.githubusercontent.com/vinitkumargoel/plannotator/main/scripts/install.ps1 | iex
 ```
 
 **Then in Copilot CLI:**
 
 ```
-/plugin marketplace add backnotprop/plannotator
+/plugin marketplace add vinitkumargoel/plannotator
 /plugin install plannotator-copilot@plannotator
 ```
 
@@ -65,5 +65,5 @@ When you use plan mode in Copilot CLI:
 ## Links
 
 - [Website](https://plannotator.ai)
-- [GitHub](https://github.com/backnotprop/plannotator)
+- [GitHub](https://github.com/vinitkumargoel/plannotator)
 - [Docs](https://plannotator.ai/docs/getting-started/installation/)

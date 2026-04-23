@@ -2,7 +2,7 @@
 title: "Local Diff Review for Coding Agents"
 description: "How Plannotator's /plannotator-review command gives you a browser-based diff viewer to annotate agent-generated code changes and send structured feedback back to the session."
 date: 2026-02-19
-author: "backnotprop"
+author: "vinitkumargoel"
 tags: ["code-review", "diff", "hooks"]
 ---
 

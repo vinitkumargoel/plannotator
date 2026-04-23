@@ -7,13 +7,13 @@ Code review and markdown annotation are supported today. Plan mode is not yet su
 **macOS / Linux / WSL:**
 
 ```bash
-curl -fsSL https://plannotator.ai/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/vinitkumargoel/plannotator/main/scripts/install.sh | bash
 ```
 
 **Windows PowerShell:**
 
 ```powershell
-irm https://plannotator.ai/install.ps1 | iex
+irm https://raw.githubusercontent.com/vinitkumargoel/plannotator/main/scripts/install.ps1 | iex
 ```
 
 ## Usage
@@ -57,5 +57,5 @@ The message opens in the annotation UI where you can highlight text, add comment
 ## Links
 
 - [Website](https://plannotator.ai)
-- [GitHub](https://github.com/backnotprop/plannotator)
+- [GitHub](https://github.com/vinitkumargoel/plannotator)
 - [Docs](https://plannotator.ai/docs/getting-started/installation/)

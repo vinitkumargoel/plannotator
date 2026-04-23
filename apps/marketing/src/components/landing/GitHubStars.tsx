@@ -4,7 +4,7 @@ export default function GitHubStars() {
   const [stars, setStars] = useState<number | null>(null);
 
   useEffect(() => {
-    fetch('https://api.github.com/repos/backnotprop/plannotator')
+    fetch('https://api.github.com/repos/vinitkumargoel/plannotator')
       .then((r) => r.json())
       .then((data) => {
         if (data.stargazers_count) setStars(data.stargazers_count);

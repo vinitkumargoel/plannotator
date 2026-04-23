@@ -2,7 +2,7 @@
 title: "Plannotator Meets Pi"
 description: "Plannotator now supports Pi, the minimal terminal coding agent. File-based plan mode, bash safety gating, progress tracking — all with the same browser review UI."
 date: 2026-02-21
-author: "backnotprop"
+author: "vinitkumargoel"
 tags: ["pi", "integration", "plan-mode"]
 ---
 

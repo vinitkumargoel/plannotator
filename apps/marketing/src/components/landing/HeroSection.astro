@@ -38,7 +38,7 @@ import AnnoReplace from './AnnoReplace.astro';
         <button
           class="agent-btn active"
           data-agent="claude"
-          data-command="curl -fsSL https://plannotator.ai/install.sh | bash"
+          data-command="curl -fsSL https://raw.githubusercontent.com/vinitkumargoel/plannotator/main/scripts/install.sh | bash"
           data-video="https://www.youtube.com/watch?v=a_AT7cEN_9I"
         >
           <img src="/assets/icon-claude.svg" alt="" class="w-4 h-4" />
@@ -47,8 +47,8 @@ import AnnoReplace from './AnnoReplace.astro';
         <button
           class="agent-btn"
           data-agent="codex"
-          data-command="curl -fsSL https://plannotator.ai/install.sh | bash"
-          data-video="https://x.com/backnotprop/status/2031201677987164572"
+          data-command="curl -fsSL https://raw.githubusercontent.com/vinitkumargoel/plannotator/main/scripts/install.sh | bash"
+          data-video=""
         >
           <img src="/assets/icon-codex.png" alt="" class="w-4 h-4 rounded-sm" />
           <span>Codex</span>
@@ -56,7 +56,7 @@ import AnnoReplace from './AnnoReplace.astro';
         <button
           class="agent-btn"
           data-agent="copilot"
-          data-command="curl -fsSL https://plannotator.ai/install.sh | bash"
+          data-command="curl -fsSL https://raw.githubusercontent.com/vinitkumargoel/plannotator/main/scripts/install.sh | bash"
           data-video=""
         >
           <img src="/assets/icon-copilot.svg" alt="" class="w-4 h-4 icon-copilot" />
@@ -65,7 +65,7 @@ import AnnoReplace from './AnnoReplace.astro';
         <button
           class="agent-btn"
           data-agent="gemini"
-          data-command="curl -fsSL https://plannotator.ai/install.sh | bash"
+          data-command="curl -fsSL https://raw.githubusercontent.com/vinitkumargoel/plannotator/main/scripts/install.sh | bash"
           data-video="https://youtu.be/KRi7hdxikx4"
         >
           <img src="/assets/icon-gemini.png" alt="" class="w-4 h-4" />
@@ -74,7 +74,7 @@ import AnnoReplace from './AnnoReplace.astro';
         <button
           class="agent-btn"
           data-agent="opencode"
-          data-command="curl -fsSL https://plannotator.ai/install.sh | bash"
+          data-command="curl -fsSL https://raw.githubusercontent.com/vinitkumargoel/plannotator/main/scripts/install.sh | bash"
           data-video="https://youtu.be/_N7uo0EFI-U"
         >
           <img src="/assets/icon-opencode-dark.svg" alt="" class="w-4 h-4 icon-opencode" />
@@ -92,7 +92,7 @@ import AnnoReplace from './AnnoReplace.astro';
         <button
           class="agent-btn"
           data-agent="vscode"
-          data-command="curl -fsSL https://plannotator.ai/install.sh | bash"
+          data-command="curl -fsSL https://raw.githubusercontent.com/vinitkumargoel/plannotator/main/scripts/install.sh | bash"
           data-video=""
         >
           <img src="/assets/icon-vscode.svg" alt="" class="w-4 h-4" />
@@ -103,7 +103,7 @@ import AnnoReplace from './AnnoReplace.astro';
       <!-- Install command block (desktop only) -->
       <div class="hero-install group px-5 pr-12 py-3.5 text-sm max-w-xl hidden sm:flex" id="install-block">
         <span class="text-muted-foreground select-none mr-2">$</span>
-        <span class="text-foreground select-all" id="install-command">curl -fsSL https://plannotator.ai/install.sh | bash</span>
+        <span class="text-foreground select-all" id="install-command">curl -fsSL https://raw.githubusercontent.com/vinitkumargoel/plannotator/main/scripts/install.sh | bash</span>
         <button
           class="copy-btn"
           id="install-copy-btn"
@@ -194,7 +194,7 @@ import AnnoReplace from './AnnoReplace.astro';
     var agents = {
       claude: {
         steps: [
-          '/plugin marketplace add backnotprop/plannotator',
+          '/plugin marketplace add vinitkumargoel/plannotator',
           '/plugin install plannotator@plannotator',
           'Restart Claude Code to activate hooks'
         ],
@@ -217,7 +217,7 @@ import AnnoReplace from './AnnoReplace.astro';
       },
       copilot: {
         steps: [
-          '/plugin marketplace add backnotprop/plannotator',
+          '/plugin marketplace add vinitkumargoel/plannotator',
           '/plugin install plannotator-copilot@plannotator',
           'Restart Copilot CLI to activate hooks'
         ],
@@ -237,12 +237,12 @@ import AnnoReplace from './AnnoReplace.astro';
       vscode: {
         detail: 'Then install the VS Code extension for an integrated experience:',
         steps: [
-          '/plugin marketplace add backnotprop/plannotator',
+          '/plugin marketplace add vinitkumargoel/plannotator',
           'Restart Claude Code to activate hooks'
         ],
         link: {
-          text: 'Install VS Code Extension from Marketplace',
-          url: 'https://marketplace.visualstudio.com/items?itemName=backnotprop.plannotator-webview'
+          text: 'Open VS Code extension source',
+          url: 'https://github.com/vinitkumargoel/plannotator/tree/main/apps/vscode-extension'
         }
       }
     };

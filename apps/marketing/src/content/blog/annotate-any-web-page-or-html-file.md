@@ -2,7 +2,7 @@
 title: "Annotate Any Web Page or HTML File"
 description: "Plannotator's /plannotator-annotate command now accepts URLs and HTML files, not just markdown. Fetch any web page, convert it to markdown, and annotate it with structured feedback for your coding agent."
 date: 2026-04-12
-author: "backnotprop"
+author: "vinitkumargoel"
 tags: ["annotate", "url", "html", "jina-reader"]
 ---
 
@@ -14,7 +14,7 @@ tags: ["annotate", "url", "html", "jina-reader"]
 
 You're working with an agent that needs to implement against an external API or follow a specific guide. You could copy-paste the documentation into chat, but you lose structure. You could describe what you need freeform, but that's imprecise. What you actually want is to open the page, highlight the relevant sections, and send that annotated content directly to the agent.
 
-This was a [community-requested feature](https://github.com/backnotprop/plannotator/issues) that ships in [PR #545](https://github.com/backnotprop/plannotator/pull/545).
+This was a [community-requested feature](https://github.com/vinitkumargoel/plannotator/issues) that ships in [PR #545](https://github.com/vinitkumargoel/plannotator/pull/545).
 
 ## What you can do now
 
@@ -52,7 +52,7 @@ For higher rate limits (500 RPM instead of 20 RPM), set a `JINA_API_KEY`. Free k
 Install or update Plannotator:
 
 ```bash
-curl -fsSL https://plannotator.ai/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/vinitkumargoel/plannotator/main/scripts/install.sh | bash
 ```
 
 Then run the annotate command with any URL or HTML file. Annotate the relevant sections and send the feedback to your agent. Full docs at [plannotator.ai/docs](/docs/getting-started/installation/).

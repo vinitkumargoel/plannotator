@@ -26,7 +26,7 @@ Interactive Plan & Code Review for AI Coding Agents. Mark up and refine your pla
 </tr>
 </table>
 
-**New:** [Code Review](https://x.com/backnotprop/status/2031145299738263567?s=20)
+**New:** [Code Review](https://plannotator.ai/docs/commands/code-review/)
 
 
 ### Features
@@ -66,19 +66,34 @@ Plannotator lets you privately share plans, annotations, and feedback with colle
 **macOS / Linux / WSL:**
 
 ```bash
-curl -fsSL https://plannotator.ai/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/vinitkumargoel/plannotator/main/scripts/install.sh | bash
 ```
 
 **Windows PowerShell:**
 
 ```powershell
-irm https://plannotator.ai/install.ps1 | iex
+irm https://raw.githubusercontent.com/vinitkumargoel/plannotator/main/scripts/install.ps1 | iex
 ```
+
+<details>
+<summary>Install from a different GitHub fork</summary>
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/vinitkumargoel/plannotator/main/scripts/install.sh | bash -s -- --repo yourname/plannotator
+```
+
+```powershell
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/vinitkumargoel/plannotator/main/scripts/install.ps1))) -Repo yourname/plannotator
+```
+
+Or set `PLANNOTATOR_INSTALL_REPO=yourname/plannotator` before running the installer.
+
+</details>
 
 **Then in Claude Code:**
 
 ```
-/plugin marketplace add backnotprop/plannotator
+/plugin marketplace add vinitkumargoel/plannotator
 ```
 
 Restart Claude Code after plugin install.
@@ -87,11 +102,11 @@ Restart Claude Code after plugin install.
 <summary>Pin a specific version or verify provenance</summary>
 
 ```bash
-curl -fsSL https://plannotator.ai/install.sh | bash -s -- --version vX.Y.Z
+curl -fsSL https://raw.githubusercontent.com/vinitkumargoel/plannotator/main/scripts/install.sh | bash -s -- --version vX.Y.Z
 ```
 
 ```powershell
-& ([scriptblock]::Create((irm https://plannotator.ai/install.ps1))) -Version vX.Y.Z
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/vinitkumargoel/plannotator/main/scripts/install.ps1))) -Version vX.Y.Z
 ```
 
 Every released binary ships with a SHA256 sidecar (verified automatically). [SLSA provenance](https://slsa.dev/) verification is supported from v0.17.2 onwards — see the [installation docs](https://plannotator.ai/docs/getting-started/installation/#verifying-your-install) for details.
@@ -109,19 +124,19 @@ See [apps/hook/README.md](apps/hook/README.md) for detailed installation instruc
 **macOS / Linux / WSL:**
 
 ```bash
-curl -fsSL https://plannotator.ai/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/vinitkumargoel/plannotator/main/scripts/install.sh | bash
 ```
 
 **Windows PowerShell:**
 
 ```powershell
-irm https://plannotator.ai/install.ps1 | iex
+irm https://raw.githubusercontent.com/vinitkumargoel/plannotator/main/scripts/install.ps1 | iex
 ```
 
 **Then in Copilot CLI:**
 
 ```
-/plugin marketplace add backnotprop/plannotator
+/plugin marketplace add vinitkumargoel/plannotator
 /plugin install plannotator-copilot@plannotator
 ```
 
@@ -138,13 +153,13 @@ See [apps/copilot/README.md](apps/copilot/README.md) for details.
 **macOS / Linux / WSL:**
 
 ```bash
-curl -fsSL https://plannotator.ai/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/vinitkumargoel/plannotator/main/scripts/install.sh | bash
 ```
 
 **Windows PowerShell:**
 
 ```powershell
-irm https://plannotator.ai/install.ps1 | iex
+irm https://raw.githubusercontent.com/vinitkumargoel/plannotator/main/scripts/install.ps1 | iex
 ```
 
 The installer auto-detects Gemini CLI (checks for `~/.gemini`) and configures the plan review hook and policy. It also installs `/plannotator-review` and `/plannotator-annotate` slash commands.
@@ -177,12 +192,12 @@ Add to your `opencode.json`:
 **Run the install script** to get `/plannotator-review`:
 
 ```bash
-curl -fsSL https://plannotator.ai/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/vinitkumargoel/plannotator/main/scripts/install.sh | bash
 ```
 
 **Windows:**
 ```powershell
-irm https://plannotator.ai/install.ps1 | iex
+irm https://raw.githubusercontent.com/vinitkumargoel/plannotator/main/scripts/install.ps1 | iex
 ```
 
 This also clears any cached plugin versions. Then restart OpenCode.
@@ -208,13 +223,13 @@ See [apps/pi-extension/README.md](apps/pi-extension/README.md) for full usage de
 **macOS / Linux / WSL:**
 
 ```bash
-curl -fsSL https://plannotator.ai/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/vinitkumargoel/plannotator/main/scripts/install.sh | bash
 ```
 
 **Windows PowerShell:**
 
 ```powershell
-irm https://plannotator.ai/install.ps1 | iex
+irm https://raw.githubusercontent.com/vinitkumargoel/plannotator/main/scripts/install.ps1 | iex
 ```
 
 **Then in Codex — feedback flows back into the agent loop automatically:**
@@ -247,7 +262,7 @@ When your AI agent finishes planning, Plannotator:
 
 ## License
 
-Copyright 2025-2026 backnotprop
+Copyright 2025-2026 Plannotator contributors
 
 This project is licensed under either of
 

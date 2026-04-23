@@ -52,6 +52,15 @@ describe("install.sh", () => {
     expect(script).toContain('"command".*plannotator');
   });
 
+  test("supports overriding the source GitHub repo", () => {
+    expect(script).toContain('DEFAULT_REPO="vinitkumargoel/plannotator"');
+    expect(script).toContain("PLANNOTATOR_INSTALL_REPO");
+    expect(script).toContain("--repo <owner/repo>");
+    expect(script).toContain('REPO="$2"');
+    expect(script).toContain('REPO="$value"');
+    expect(script).toContain('Source repo: ${REPO}');
+  });
+
   test("installs skills via git sparse-checkout", () => {
     expect(script).toContain("git clone --depth 1 --filter=blob:none --sparse");
     expect(script).toContain("git sparse-checkout set apps/skills");
@@ -129,6 +138,13 @@ describe("install.ps1", () => {
     expect(script).toContain('Skipping skills install (git not found)');
   });
 
+  test("supports overriding the source GitHub repo", () => {
+    expect(script).toContain("[string]$Repo");
+    expect(script).toContain("PLANNOTATOR_INSTALL_REPO");
+    expect(script).toContain("vinitkumargoel/plannotator");
+    expect(script).toContain('Write-Host "Source repo: $repo"');
+  });
+
   test("installs slash commands", () => {
     expect(script).toContain("plannotator-review.md");
     expect(script).toContain("plannotator-annotate.md");
@@ -180,6 +196,13 @@ describe("install.cmd", () => {
 
   test("warns about duplicate hooks", () => {
     expect(script).toContain("DUPLICATE HOOK DETECTED");
+  });
+
+  test("supports overriding the source GitHub repo", () => {
+    expect(script).toContain("--repo");
+    expect(script).toContain("PLANNOTATOR_INSTALL_REPO");
+    expect(script).toContain('set "REPO=vinitkumargoel/plannotator"');
+    expect(script).toContain('echo Source repo: !REPO!');
   });
 
   test("installs skills via git sparse-checkout", () => {
@@ -546,6 +569,16 @@ describe("install shared behavior", () => {
         throw new Error(`${name} --signer-workflow does not reference release.yml`);
       }
     }
+  });
+
+  test("all installers derive signer workflow and marketplace repo from the configured repo", () => {
+    const cmdScript = readFileSync(join(scriptsDir, "install.cmd"), "utf-8");
+    expect(sh).toContain('${REPO}/.github/workflows/release.yml');
+    expect(sh).toContain('/plugin marketplace add ${REPO}');
+    expect(ps).toContain('$repo/.github/workflows/release.yml');
+    expect(ps).toContain('/plugin marketplace add $repo');
+    expect(cmdScript).toContain('!REPO!/.github/workflows/release.yml');
+    expect(cmdScript).toContain('/plugin marketplace add !REPO!');
   });
 
   test("install.sh gates gh verification behind verify_attestation guard", () => {

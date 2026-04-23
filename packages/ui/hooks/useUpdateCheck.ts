@@ -15,7 +15,7 @@ interface UpdateInfo {
   featureHighlight?: FeatureHighlight;
 }
 
-const GITHUB_API = 'https://api.github.com/repos/backnotprop/plannotator/releases/latest';
+const GITHUB_API = 'https://api.github.com/repos/vinitkumargoel/plannotator/releases/latest';
 
 // Feature highlights for milestone releases
 const FEATURE_HIGHLIGHTS: Record<string, FeatureHighlight> = {
@@ -59,7 +59,7 @@ export function useUpdateCheck(): UpdateInfo | null {
             currentVersion,
             latestVersion: previewVersion,
             updateAvailable: true,
-            releaseUrl: `https://github.com/backnotprop/plannotator/releases/tag/v${cleanPreview}`,
+            releaseUrl: `https://github.com/vinitkumargoel/plannotator/releases/tag/v${cleanPreview}`,
             featureHighlight: FEATURE_HIGHLIGHTS[cleanPreview],
           });
           return;

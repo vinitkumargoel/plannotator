@@ -2,7 +2,7 @@
 title: "Introducing Plannotator"
 description: "A plan review UI for Claude Code that lets you approve or request changes with annotated feedback."
 date: 2025-12-27
-author: "backnotprop"
+author: "vinitkumargoel"
 tags: ["announcement", "release"]
 ---
 

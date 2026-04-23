@@ -222,7 +222,7 @@ export const PlanHeaderMenu: React.FC<PlanHeaderMenuProps> = ({
             </div>
             <div className="flex flex-col items-start gap-1 text-[11px]">
               <a
-                href="https://github.com/backnotprop/plannotator/releases"
+                href="https://github.com/vinitkumargoel/plannotator/releases"
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={closeMenu}
@@ -231,7 +231,7 @@ export const PlanHeaderMenu: React.FC<PlanHeaderMenuProps> = ({
                 Release notes
               </a>
               <a
-                href="https://github.com/backnotprop/plannotator"
+                href="https://github.com/vinitkumargoel/plannotator"
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={closeMenu}
