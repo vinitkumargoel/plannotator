@@ -15,36 +15,55 @@ Install the `plannotator` command so your agent can use it.
 **macOS / Linux / WSL:**
 
 ```bash
-curl -fsSL https://plannotator.ai/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/vinitkumargoel/plannotator/main/scripts/install.sh | bash
 ```
 
 **Windows PowerShell:**
 
 ```powershell
-irm https://plannotator.ai/install.ps1 | iex
+irm https://raw.githubusercontent.com/vinitkumargoel/plannotator/main/scripts/install.ps1 | iex
 ```
 
 **Windows CMD:**
 
 ```cmd
-curl -fsSL https://plannotator.ai/install.cmd -o install.cmd && install.cmd && del install.cmd
+curl -fsSL https://raw.githubusercontent.com/vinitkumargoel/plannotator/main/scripts/install.cmd -o install.cmd && install.cmd && del install.cmd
 ```
 
 The install script respects `CLAUDE_CONFIG_DIR` if set, placing hooks in your custom config directory instead of `~/.claude`.
 
 <details>
-<summary><strong>Pin a specific version</strong></summary>
+<summary><strong>Install from a GitHub fork</strong></summary>
 
 ```bash
-curl -fsSL https://plannotator.ai/install.sh | bash -s -- --version vX.Y.Z
+curl -fsSL https://raw.githubusercontent.com/vinitkumargoel/plannotator/main/scripts/install.sh | bash -s -- --repo yourname/plannotator
 ```
 
 ```powershell
-& ([scriptblock]::Create((irm https://plannotator.ai/install.ps1))) -Version vX.Y.Z
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/vinitkumargoel/plannotator/main/scripts/install.ps1))) -Repo yourname/plannotator
 ```
 
 ```cmd
-curl -fsSL https://plannotator.ai/install.cmd -o install.cmd && install.cmd --version vX.Y.Z && del install.cmd
+curl -fsSL https://raw.githubusercontent.com/vinitkumargoel/plannotator/main/scripts/install.cmd -o install.cmd && install.cmd --repo yourname/plannotator && del install.cmd
+```
+
+You can also set `PLANNOTATOR_INSTALL_REPO=yourname/plannotator` and keep using the standard install command.
+
+</details>
+
+<details>
+<summary><strong>Pin a specific version</strong></summary>
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/vinitkumargoel/plannotator/main/scripts/install.sh | bash -s -- --version vX.Y.Z
+```
+
+```powershell
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/vinitkumargoel/plannotator/main/scripts/install.ps1))) -Version vX.Y.Z
+```
+
+```cmd
+curl -fsSL https://raw.githubusercontent.com/vinitkumargoel/plannotator/main/scripts/install.cmd -o install.cmd && install.cmd --version vX.Y.Z && del install.cmd
 ```
 
 Version pinning is fully supported from **v0.17.2 onwards**. v0.17.2 is the first release to ship native ARM64 Windows binaries and SLSA build-provenance attestations. Pinning to a pre-v0.17.2 tag may work for default installs on macOS, Linux, and x64 Windows, but ARM64 Windows hosts will get a 404 and provenance verification will be rejected.
@@ -58,7 +77,7 @@ Every release includes SHA256 checksums (verified automatically) and optional [S
 ### Plugin marketplace (recommended)
 
 ```
-/plugin marketplace add backnotprop/plannotator
+/plugin marketplace add vinitkumargoel/plannotator
 /plugin install plannotator@plannotator
 ```
 
@@ -111,7 +130,7 @@ Restart OpenCode. By default, `submit_plan` is available to OpenCode's `plan` ag
 For slash commands (`/plannotator-review`, `/plannotator-annotate`), also run the install script:
 
 ```bash
-curl -fsSL https://plannotator.ai/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/vinitkumargoel/plannotator/main/scripts/install.sh | bash
 ```
 
 This also clears any cached plugin versions.

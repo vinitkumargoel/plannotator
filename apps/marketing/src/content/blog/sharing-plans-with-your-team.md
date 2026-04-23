@@ -2,7 +2,7 @@
 title: "Sharing Plans With Your Team"
 description: "How Plannotator's URL-based sharing lets teammates review and annotate agent plans together — with zero backend, zero accounts, and full privacy."
 date: 2026-02-18
-author: "backnotprop"
+author: "vinitkumargoel"
 tags: ["sharing", "collaboration", "privacy"]
 ---
 

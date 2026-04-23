@@ -94,7 +94,7 @@ Annotates the agent's most recent message. See the [annotate last docs](/docs/co
 The plugin is installed from the marketplace:
 
 ```
-/plugin marketplace add backnotprop/plannotator
+/plugin marketplace add vinitkumargoel/plannotator
 /plugin install plannotator@plannotator
 ```
 

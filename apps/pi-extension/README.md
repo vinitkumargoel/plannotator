@@ -13,7 +13,7 @@ pi install npm:@plannotator/pi-extension
 **From source:**
 
 ```bash
-git clone https://github.com/backnotprop/plannotator.git
+git clone https://github.com/vinitkumargoel/plannotator.git
 pi install ./plannotator/apps/pi-extension
 ```
 

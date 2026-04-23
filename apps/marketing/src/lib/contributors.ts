@@ -14,7 +14,7 @@ export async function getContributors(): Promise<Person[]> {
   try {
     if (token) {
       const query = `{
-        repository(owner: "backnotprop", name: "plannotator") {
+        repository(owner: "vinitkumargoel", name: "plannotator") {
           contributors: defaultBranchRef {
             target {
               ... on Commit {
@@ -54,7 +54,7 @@ export async function getContributors(): Promise<Person[]> {
         }
       }
     } else {
-      const res = await fetch('https://api.github.com/repos/backnotprop/plannotator/contributors?per_page=50', {
+      const res = await fetch('https://api.github.com/repos/vinitkumargoel/plannotator/contributors?per_page=50', {
         headers: { 'Accept': 'application/vnd.github.v3+json' },
       });
       if (res.ok) {

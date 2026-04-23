@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <a href="https://marketplace.visualstudio.com/items?itemName=backnotprop.plannotator-webview"><img src="https://img.shields.io/visual-studio-marketplace/v/backnotprop.plannotator-webview?label=Marketplace&logo=visualstudiocode" alt="VS Code Marketplace" /></a>
+  <a href="https://github.com/vinitkumargoel/plannotator/tree/main/apps/vscode-extension"><img src="https://img.shields.io/badge/source-fork-blue?logo=github" alt="VS Code extension source" /></a>
   <a href="https://code.visualstudio.com/"><img src="https://img.shields.io/badge/VS%20Code-^1.85.0-blue?logo=visualstudiocode" alt="VS Code" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT" /></a>
 </p>
@@ -50,10 +50,10 @@ Review code changes with a full diff viewer, file tree, inline annotations, and 
 
 ## Getting Started
 
-1. Install this extension from the VS Code Marketplace
-2. Install the [Plannotator Claude Code plugin](https://github.com/backnotprop/plannotator):
+1. Build or package this extension from the forked source in this repo
+2. Install the [Plannotator Claude Code plugin](https://github.com/vinitkumargoel/plannotator):
    ```
-   /install-plugin backnotprop/plannotator
+   /install-plugin vinitkumargoel/plannotator
    ```
 3. **Launch Claude Code from VS Code's integrated terminal** — this is required so the extension can intercept browser opens. Plan reviews, code reviews, and annotations will automatically open in VS Code tabs instead of an external browser.
 
@@ -84,7 +84,7 @@ Review code changes with a full diff viewer, file tree, inline annotations, and 
 
 ## Requirements
 
-- [Plannotator](https://github.com/backnotprop/plannotator) Claude Code plugin installed
+- [Plannotator](https://github.com/vinitkumargoel/plannotator) Claude Code plugin installed
 - VS Code 1.85.0+
 
 ## License

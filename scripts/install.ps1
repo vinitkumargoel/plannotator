@@ -1,5 +1,6 @@
 # Plannotator Windows Installer
 param(
+    [string]$Repo,
     [string]$Version = "latest",
     [switch]$VerifyAttestation,
     [switch]$SkipAttestation
@@ -15,7 +16,19 @@ if ($VerifyAttestation -and $SkipAttestation) {
     exit 1
 }
 
-$repo = "backnotprop/plannotator"
+if (-not $Repo) {
+    $Repo = if ($env:PLANNOTATOR_INSTALL_REPO) {
+        $env:PLANNOTATOR_INSTALL_REPO
+    } else {
+        "vinitkumargoel/plannotator"
+    }
+}
+if ($Repo -notmatch '^[^/\s]+/[^/\s]+$') {
+    [Console]::Error.WriteLine("Invalid repo: $Repo. Expected owner/repo.")
+    exit 1
+}
+
+$repo = $Repo
 $installDir = "$env:LOCALAPPDATA\plannotator"
 
 # First plannotator release that carries SLSA build-provenance attestations.
@@ -86,6 +99,7 @@ if ($Version -eq "latest") {
 }
 
 Write-Host "Installing plannotator $latestTag..."
+Write-Host "Source repo: $repo"
 
 # Resolve SLSA build-provenance verification opt-in BEFORE the download so we
 # can fail fast without wasting bandwidth if the requested tag predates
@@ -197,7 +211,7 @@ if ($verifyAttestationResolved) {
         $verifyOutput = & gh attestation verify $tmpFile `
             --repo $repo `
             --source-ref "refs/tags/$latestTag" `
-            --signer-workflow "backnotprop/plannotator/.github/workflows/release.yml" 2>&1
+            --signer-workflow "$repo/.github/workflows/release.yml" 2>&1
         if ($LASTEXITCODE -eq 0) {
             Write-Host "✓ verified build provenance (SLSA)"
         } else {
@@ -547,7 +561,7 @@ Write-Host "  CLAUDE CODE USERS: YOU ARE ALL SET!"
 Write-Host "=========================================="
 Write-Host ""
 Write-Host "Install the Claude Code plugin:"
-Write-Host "  /plugin marketplace add backnotprop/plannotator"
+Write-Host "  /plugin marketplace add $repo"
 Write-Host "  /plugin install plannotator@plannotator"
 Write-Host ""
 Write-Host "The /plannotator-review, /plannotator-annotate, and /plannotator-last commands are ready to use after you restart Claude Code!"

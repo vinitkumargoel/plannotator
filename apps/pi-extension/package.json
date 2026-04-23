@@ -3,16 +3,16 @@
   "version": "0.19.0",
   "type": "module",
   "description": "Plannotator extension for Pi coding agent - interactive plan review with visual annotation",
-  "author": "backnotprop",
+  "author": "vinitkumargoel",
   "license": "MIT OR Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/backnotprop/plannotator.git",
+    "url": "git+https://github.com/vinitkumargoel/plannotator.git",
     "directory": "apps/pi-extension"
   },
-  "homepage": "https://github.com/backnotprop/plannotator",
+  "homepage": "https://github.com/vinitkumargoel/plannotator",
   "bugs": {
-    "url": "https://github.com/backnotprop/plannotator/issues"
+    "url": "https://github.com/vinitkumargoel/plannotator/issues"
   },
   "keywords": ["pi-package", "plannotator", "plan-review", "ai-agent", "coding-agent"],
   "pi": {

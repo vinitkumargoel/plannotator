@@ -2,7 +2,7 @@
 title: "Plan Diff: See What Changed Between Iterations"
 description: "When your coding agent revises a plan, Plannotator now shows exactly what changed. Visual diffs, raw markdown diffs, and version history — across Claude Code, OpenCode, and Pi."
 date: 2026-02-22
-author: "backnotprop"
+author: "vinitkumargoel"
 tags: ["plan-diff", "plan-mode", "version-history"]
 ---
 
@@ -14,7 +14,7 @@ tags: ["plan-diff", "plan-mode", "version-history"]
 
 ## The problem
 
-You're reviewing a plan after instructing the agent to revise it. You have no idea what actually changed. With long plans, you're re-reading the whole thing. This was one of the most [requested features](https://github.com/backnotprop/plannotator/issues/138) from the community — a way to skip the guesswork and go straight to what's different.
+You're reviewing a plan after instructing the agent to revise it. You have no idea what actually changed. With long plans, you're re-reading the whole thing. This was one of the most [requested features](https://github.com/vinitkumargoel/plannotator/issues/138) from the community — a way to skip the guesswork and go straight to what's different.
 
 ## How it works
 
@@ -44,14 +44,14 @@ Plan Diff is available across all three supported agents: Claude Code, OpenCode,
 
 ## This is v1
 
-This is the first release of Plan Diff. The version matching relies on plan headings and dates to group iterations together, which works well for typical workflows but may have rough edges with unusual plan titles or long-running sessions. If something feels off (wrong versions being compared, diffs not appearing when expected), [open an issue](https://github.com/backnotprop/plannotator/issues). This feature was built directly from community requests ([#138](https://github.com/backnotprop/plannotator/issues/138), [#111](https://github.com/backnotprop/plannotator/issues/111)), and feedback will shape where it goes next.
+This is the first release of Plan Diff. The version matching relies on plan headings and dates to group iterations together, which works well for typical workflows but may have rough edges with unusual plan titles or long-running sessions. If something feels off (wrong versions being compared, diffs not appearing when expected), [open an issue](https://github.com/vinitkumargoel/plannotator/issues). This feature was built directly from community requests ([#138](https://github.com/vinitkumargoel/plannotator/issues/138), [#111](https://github.com/vinitkumargoel/plannotator/issues/111)), and feedback will shape where it goes next.
 
 ## Try it
 
 Update to the latest version:
 
 ```bash
-curl -fsSL https://plannotator.ai/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/vinitkumargoel/plannotator/main/scripts/install.sh | bash
 ```
 
 Start a planning session, deny a plan with some annotations, and let the agent resubmit. The diff badge will appear automatically.

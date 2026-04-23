@@ -80,7 +80,7 @@ The paste service is fully open source — the same codebase you're looking at.
 
 ### Run the binary
 
-Download the paste service binary for your platform from [GitHub Releases](https://github.com/backnotprop/plannotator/releases). Binaries are available for macOS (ARM64, x64), Linux (x64, ARM64), and Windows (x64).
+Download the paste service binary for your platform from [GitHub Releases](https://github.com/vinitkumargoel/plannotator/releases). Binaries are available for macOS (ARM64, x64), Linux (x64, ARM64), and Windows (x64).
 
 ```bash
 chmod +x plannotator-paste-*

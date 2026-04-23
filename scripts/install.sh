@@ -1,7 +1,8 @@
 #!/bin/bash
 set -e
 
-REPO="backnotprop/plannotator"
+DEFAULT_REPO="vinitkumargoel/plannotator"
+REPO="${PLANNOTATOR_INSTALL_REPO:-$DEFAULT_REPO}"
 INSTALL_DIR="$HOME/.local/bin"
 
 # First plannotator release that carries SLSA build-provenance attestations.
@@ -33,13 +34,16 @@ VERSION_EXPLICIT=0
 VERIFY_ATTESTATION_FLAG=-1
 
 usage() {
-    cat <<'USAGE'
-Usage: install.sh [--version <tag>] [--verify-attestation | --skip-attestation] [--help]
+    cat <<USAGE
+Usage: install.sh [--repo <owner/repo>] [--version <tag>] [--verify-attestation | --skip-attestation] [--help]
        install.sh <tag>
 
 Options:
+  --repo <owner/repo>  Install from a GitHub fork instead of the default
+                       repository (${REPO}). Also honored via
+                       PLANNOTATOR_INSTALL_REPO.
   --version <tag>        Install a specific version (e.g. vX.Y.Z or X.Y.Z;
-                         see https://github.com/backnotprop/plannotator/releases).
+                         see https://github.com/${REPO}/releases).
                          Defaults to the latest GitHub release.
   --verify-attestation   Require SLSA build-provenance verification via
                          `gh attestation verify`. Fails the install if gh is
@@ -54,15 +58,67 @@ Provenance verification is off by default. Enable it by any of:
   - setting { "verifyAttestation": true } in ~/.plannotator/config.json
 
 Examples:
-  curl -fsSL https://plannotator.ai/install.sh | bash
-  curl -fsSL https://plannotator.ai/install.sh | bash -s -- --version vX.Y.Z
-  curl -fsSL https://plannotator.ai/install.sh | bash -s -- --verify-attestation
+  curl -fsSL https://raw.githubusercontent.com/vinitkumargoel/plannotator/main/scripts/install.sh | bash
+  curl -fsSL https://raw.githubusercontent.com/vinitkumargoel/plannotator/main/scripts/install.sh | bash -s -- --repo yourname/plannotator
+  curl -fsSL https://raw.githubusercontent.com/vinitkumargoel/plannotator/main/scripts/install.sh | bash -s -- --version vX.Y.Z
+  curl -fsSL https://raw.githubusercontent.com/vinitkumargoel/plannotator/main/scripts/install.sh | bash -s -- --verify-attestation
   bash install.sh vX.Y.Z
 USAGE
 }
 
+validate_repo() {
+    case "$1" in
+        */*)
+            case "$1" in
+                */|/*|*//*)
+                    return 1
+                    ;;
+                *)
+                    return 0
+                    ;;
+            esac
+            ;;
+        *)
+            return 1
+            ;;
+    esac
+}
+
 while [ $# -gt 0 ]; do
     case "$1" in
+        --repo)
+            if [ -z "${2:-}" ]; then
+                echo "--repo requires an owner/repo argument" >&2
+                usage >&2
+                exit 1
+            fi
+            case "$2" in
+                -*)
+                    echo "--repo requires an owner/repo value, got flag: $2" >&2
+                    usage >&2
+                    exit 1
+                    ;;
+            esac
+            REPO="$2"
+            shift 2
+            ;;
+        --repo=*)
+            value="${1#--repo=}"
+            if [ -z "$value" ]; then
+                echo "--repo requires an owner/repo argument" >&2
+                usage >&2
+                exit 1
+            fi
+            case "$value" in
+                -*)
+                    echo "--repo requires an owner/repo value, got flag: $value" >&2
+                    usage >&2
+                    exit 1
+                    ;;
+            esac
+            REPO="$value"
+            shift
+            ;;
         --version)
             if [ -z "${2:-}" ]; then
                 echo "--version requires an argument" >&2
@@ -141,10 +197,16 @@ while [ $# -gt 0 ]; do
     esac
 done
 
+if ! validate_repo "$REPO"; then
+    echo "Invalid repo: ${REPO}. Expected owner/repo." >&2
+    usage >&2
+    exit 1
+fi
+
 case "$(uname -s)" in
     Darwin) os="darwin" ;;
     Linux)  os="linux" ;;
-    *)      echo "Unsupported OS. For Windows, run: irm https://plannotator.ai/install.ps1 | iex" >&2; exit 1 ;;
+    *)      echo "Unsupported OS. For Windows, run: irm https://raw.githubusercontent.com/vinitkumargoel/plannotator/main/scripts/install.ps1 | iex" >&2; exit 1 ;;
 esac
 
 case "$(uname -m)" in
@@ -181,6 +243,7 @@ else
 fi
 
 echo "Installing plannotator ${latest_tag}..."
+echo "Source repo: ${REPO}"
 
 # Resolve SLSA build-provenance verification opt-in BEFORE the download so we
 # can fail fast without wasting bandwidth if the requested tag predates
@@ -266,7 +329,7 @@ if [ "$verify_attestation" -eq 1 ]; then
         if gh_output=$(gh attestation verify "$tmp_file" \
             --repo "$REPO" \
             --source-ref "refs/tags/${latest_tag}" \
-            --signer-workflow "backnotprop/plannotator/.github/workflows/release.yml" 2>&1); then
+            --signer-workflow "${REPO}/.github/workflows/release.yml" 2>&1); then
             echo "✓ verified build provenance (SLSA)"
         else
             echo "$gh_output" >&2
@@ -621,7 +684,7 @@ echo "  CLAUDE CODE USERS: YOU'RE ALL SET!"
 echo "=========================================="
 echo ""
 echo "Install the Claude Code plugin:"
-echo "  /plugin marketplace add backnotprop/plannotator"
+echo "  /plugin marketplace add ${REPO}"
 echo "  /plugin install plannotator@plannotator"
 echo ""
 echo "The /plannotator-review, /plannotator-annotate, and /plannotator-last commands are ready to use after you restart Claude Code!"
