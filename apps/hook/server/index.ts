@@ -63,6 +63,7 @@ import {
   startAnnotateServer,
   handleAnnotateServerReady,
 } from "@plannotator/server/annotate";
+import { startHomeServer } from "@plannotator/server/home";
 import { type DiffType, getVcsContext, runVcsDiff, gitRuntime } from "@plannotator/server/vcs";
 import { loadConfig, resolveDefaultDiffType, resolveUseJina } from "@plannotator/shared/config";
 import { htmlToMarkdown } from "@plannotator/shared/html-to-markdown";
@@ -97,6 +98,7 @@ import {
   isInteractiveNoArgInvocation,
   isTopLevelHelpInvocation,
 } from "./cli";
+import { publishPlanToHome, waitForPublishedPlanDecision } from "./home-client";
 import path from "path";
 import { tmpdir } from "os";
 
@@ -208,6 +210,47 @@ if (args[0] === "sessions") {
   }
   console.error(`\nReopen with: plannotator sessions --open [N]`);
   process.exit(0);
+
+} else if (args[0] === "home") {
+  // ============================================
+  // HOME DASHBOARD MODE
+  // ============================================
+
+  const daemonMode = args.includes("--daemon");
+  const homeProject = (await detectProjectName()) ?? "_unknown";
+
+  const server = await startHomeServer({
+    htmlContent: planHtmlContent,
+    onReady: daemonMode
+      ? undefined
+      : (url, isRemote, port) => {
+          handleServerReady(url, isRemote, port);
+        },
+  });
+
+  registerSession({
+    pid: process.pid,
+    port: server.port,
+    url: server.url,
+    mode: "home",
+    project: homeProject,
+    startedAt: new Date().toISOString(),
+    label: `home-${homeProject}`,
+  });
+
+  const shutdown = () => {
+    server.stop();
+    process.exit(0);
+  };
+
+  process.on("SIGINT", shutdown);
+  process.on("SIGTERM", shutdown);
+
+  if (daemonMode) {
+    console.error(`Plannotator home daemon listening on ${server.url}`);
+  }
+
+  await new Promise(() => {});
 
 } else if (args[0] === "review") {
   // ============================================
@@ -825,36 +868,12 @@ if (args[0] === "sessions") {
   }
 
   const planProject = (await detectProjectName()) ?? "_unknown";
-
-  const server = await startPlannotatorServer({
+  const published = await publishPlanToHome({
     plan: planContent,
-    origin: "copilot-cli",
-    sharingEnabled,
-    shareBaseUrl,
-    pasteApiUrl,
-    htmlContent: planHtmlContent,
-    onReady: async (url, isRemote, port) => {
-      handleServerReady(url, isRemote, port);
-
-      if (isRemote && sharingEnabled) {
-        await writeRemoteShareLink(planContent, shareBaseUrl, "review the plan", "plan only").catch(() => {});
-      }
-    },
-  });
-
-  registerSession({
-    pid: process.pid,
-    port: server.port,
-    url: server.url,
-    mode: "plan",
     project: planProject,
-    startedAt: new Date().toISOString(),
-    label: `plan-${planProject}`,
+    origin: "copilot-cli",
   });
-
-  const result = await server.waitForDecision();
-  await Bun.sleep(1500);
-  server.stop();
+  const result = await waitForPublishedPlanDecision(published.sessionId);
 
   // Output Copilot CLI permission decision format
   if (result.approved) {
@@ -1020,43 +1039,13 @@ if (args[0] === "sessions") {
   }
 
   const planProject = (await detectProjectName()) ?? "_unknown";
-
-  // Start the plan review server
-  const server = await startPlannotatorServer({
+  const published = await publishPlanToHome({
     plan: planContent,
+    project: planProject,
     origin: isGemini ? "gemini-cli" : detectedOrigin,
     permissionMode,
-    sharingEnabled,
-    shareBaseUrl,
-    pasteApiUrl,
-    htmlContent: planHtmlContent,
-    onReady: async (url, isRemote, port) => {
-      handleServerReady(url, isRemote, port);
-
-      if (isRemote && sharingEnabled) {
-        await writeRemoteShareLink(planContent, shareBaseUrl, "review the plan", "plan only").catch(() => {});
-      }
-    },
   });
-
-  registerSession({
-    pid: process.pid,
-    port: server.port,
-    url: server.url,
-    mode: "plan",
-    project: planProject,
-    startedAt: new Date().toISOString(),
-    label: `plan-${planProject}`,
-  });
-
-  // Wait for user decision (blocks until approve/deny)
-  const result = await server.waitForDecision();
-
-  // Give browser time to receive response and update UI
-  await Bun.sleep(1500);
-
-  // Cleanup
-  server.stop();
+  const result = await waitForPublishedPlanDecision(published.sessionId);
 
   // Output decision in the appropriate format for the harness
   if (isGemini) {

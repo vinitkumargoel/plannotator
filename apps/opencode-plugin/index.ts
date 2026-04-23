@@ -38,10 +38,6 @@ if (_proto?.constructor && _proto.constructor !== Response && _proto.constructor
   }
 }
 import {
-  startPlannotatorServer,
-  handleServerReady,
-} from "@plannotator/server";
-import {
   startReviewServer,
   handleReviewServerReady,
 } from "@plannotator/server/review";
@@ -71,6 +67,7 @@ import {
   shouldRejectSubmitPlanForAgent,
   type PlannotatorOpenCodeOptions,
 } from "./workflow";
+import { publishPlanToHome, waitForPublishedPlanDecision } from "./home";
 
 // Lazy-load HTML at first use instead of embedding in the bundle.
 // The two SPA files are ~20 MB combined — inlining them as string literals
@@ -461,26 +458,19 @@ Use /plannotator-last or /plannotator-annotate for manual review, or set workflo
             return "Error: Plan content is empty. Write your plan first, then call submit_plan.";
           }
 
-          const sharingEnabled = await getSharingEnabled();
-          const server = await startPlannotatorServer({
+          const published = await publishPlanToHome({
             plan: planContent,
+            directory: ctx.directory,
             origin: "opencode",
-            sharingEnabled,
-            shareBaseUrl: getShareBaseUrl(),
-            pasteApiUrl: getPasteApiUrl(),
             htmlContent: getPlanHtml(),
-            opencodeClient: ctx.client,
-            onReady: async (url, isRemote, port) => {
-              handleServerReady(url, isRemote, port);
-            },
           });
 
           const timeoutSeconds = getPlanTimeoutSeconds();
           const timeoutMs = timeoutSeconds === null ? null : timeoutSeconds * 1000;
 
           const result = timeoutMs === null
-            ? await server.waitForDecision()
-            : await new Promise<Awaited<ReturnType<typeof server.waitForDecision>>>((resolve) => {
+            ? await waitForPublishedPlanDecision(published.sessionId)
+            : await new Promise<Awaited<ReturnType<typeof waitForPublishedPlanDecision>>>((resolve) => {
                 const timeoutId = setTimeout(
                   () =>
                     resolve({
@@ -490,13 +480,11 @@ Use /plannotator-last or /plannotator-annotate for manual review, or set workflo
                   timeoutMs
                 );
 
-                server.waitForDecision().then((r) => {
+                waitForPublishedPlanDecision(published.sessionId).then((r) => {
                   clearTimeout(timeoutId);
                   resolve(r);
                 });
               });
-          await Bun.sleep(1500);
-          server.stop();
 
           if (result.approved) {
             const shouldSwitchAgent = result.agentSwitch && result.agentSwitch !== 'disabled';

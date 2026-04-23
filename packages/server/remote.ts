@@ -9,6 +9,7 @@
  */
 
 const DEFAULT_REMOTE_PORT = 19432;
+const DEFAULT_HOME_PORT = 19430;
 const LOOPBACK_HOST = "127.0.0.1";
 
 function getRemoteOverride(): boolean | null {
@@ -63,6 +64,24 @@ export function getServerPort(): number {
 
   // Remote sessions use fixed port for port forwarding; local uses random
   return isRemoteSession() ? DEFAULT_REMOTE_PORT : 0;
+}
+
+/**
+ * Get the fixed port used by the long-lived dashboard/home server.
+ */
+export function getHomePort(): number {
+  const envPort = process.env.PLANNOTATOR_HOME_PORT || process.env.PLANNOTATOR_PORT;
+  if (envPort) {
+    const parsed = parseInt(envPort, 10);
+    if (!isNaN(parsed) && parsed > 0 && parsed < 65536) {
+      return parsed;
+    }
+    console.error(
+      `[Plannotator] Warning: Invalid dashboard port "${envPort}", using default`
+    );
+  }
+
+  return DEFAULT_HOME_PORT;
 }
 
 /**

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useLayoutEffect, useMemo, useRef, useCallback } from 'react';
 import { type Origin, getAgentName } from '@plannotator/shared/agents';
-import { parseMarkdownToBlocks, exportAnnotations, exportLinkedDocAnnotations, exportEditorAnnotations, extractFrontmatter, wrapFeedbackForAgent, Frontmatter } from '@plannotator/ui/utils/parser';
+import type { DashboardSession, DashboardSettings, DashboardReviewerSettings, DashboardReviewComment, DashboardReviewCapability } from '@plannotator/shared/dashboard';
+import { parseMarkdownToBlocks, exportAnnotations, exportLinkedDocAnnotations, exportEditorAnnotations, exportPlanReviewComments, extractFrontmatter, wrapFeedbackForAgent, Frontmatter } from '@plannotator/ui/utils/parser';
 import { Viewer, ViewerHandle } from '@plannotator/ui/components/Viewer';
 import { AnnotationPanel } from '@plannotator/ui/components/AnnotationPanel';
 import { ExportModal } from '@plannotator/ui/components/ExportModal';
@@ -74,6 +75,8 @@ import type { PlanDiffMode } from '@plannotator/ui/components/plan-diff/PlanDiff
 import { DEMO_PLAN_CONTENT as DEFAULT_DEMO_PLAN_CONTENT } from './demoPlan';
 import { DIFF_DEMO_PLAN_CONTENT } from './demoPlanDiffDemo';
 import { canUseAnnotateWideMode, resolveWideModeExitLayout, type WideModeLayoutSnapshot, type WideModeType } from './wideMode';
+import { HomeDashboard } from './HomeDashboard';
+import { PlanSourceReview } from './PlanSourceReview';
 const USE_DIFF_DEMO =
   import.meta.env.VITE_DIFF_DEMO === '1' ||
   import.meta.env.VITE_DIFF_DEMO === 'true';
@@ -143,6 +146,20 @@ const App: React.FC = () => {
   }, []);
   const [isApiMode, setIsApiMode] = useState(false);
   const [origin, setOrigin] = useState<Origin | null>(null);
+  const [dashboardMode, setDashboardMode] = useState<'none' | 'dashboard' | 'session'>('none');
+  const [dashboardSessions, setDashboardSessions] = useState<DashboardSession[]>([]);
+  const [dashboardSession, setDashboardSession] = useState<DashboardSession | null>(null);
+  const [dashboardSettings, setDashboardSettings] = useState<DashboardSettings | null>(null);
+  const [reviewCapabilities, setReviewCapabilities] = useState<DashboardReviewCapability[]>([]);
+  const [planReviewMode, setPlanReviewMode] = useState(false);
+  const [planReviewComments, setPlanReviewComments] = useState<DashboardReviewComment[]>([]);
+  const [planReviewSettings, setPlanReviewSettings] = useState<DashboardReviewerSettings>({
+    provider: 'codex',
+    model: 'gpt-5.4',
+    promptPreset: 'balanced',
+    customPrompt: '',
+  });
+  const [isRunningPlanReview, setIsRunningPlanReview] = useState(false);
   const [gitUser, setGitUser] = useState<string | undefined>();
   const [isWSL, setIsWSL] = useState(false);
   const [globalAttachments, setGlobalAttachments] = useState<ImageAttachment[]>([]);
@@ -637,16 +654,46 @@ const App: React.FC = () => {
     if (isLoadingShared) return; // Wait for share check to complete
     if (isSharedSession) return; // Already loaded from share
 
-    fetch('/api/plan')
+    const requestedSession = new URLSearchParams(window.location.search).get('session');
+    const apiUrl = requestedSession
+      ? `/api/plan?session=${encodeURIComponent(requestedSession)}`
+      : '/api/plan';
+
+    fetch(apiUrl)
       .then(res => {
         if (!res.ok) throw new Error('Not in API mode');
         return res.json();
       })
-      .then((data: { plan: string; origin?: Origin; mode?: 'annotate' | 'annotate-last' | 'annotate-folder' | 'archive'; filePath?: string; sourceInfo?: string; sharingEnabled?: boolean; shareBaseUrl?: string; pasteApiUrl?: string; repoInfo?: { display: string; branch?: string; host?: string }; previousPlan?: string | null; versionInfo?: { version: number; totalVersions: number; project: string }; archivePlans?: ArchivedPlan[]; projectRoot?: string; isWSL?: boolean; serverConfig?: { displayName?: string; gitUser?: string } }) => {
+      .then((data: { plan: string; origin?: Origin; mode?: 'annotate' | 'annotate-last' | 'annotate-folder' | 'archive' | 'dashboard' | 'dashboard-session'; filePath?: string; sourceInfo?: string; sharingEnabled?: boolean; shareBaseUrl?: string; pasteApiUrl?: string; repoInfo?: { display: string; branch?: string; host?: string }; previousPlan?: string | null; versionInfo?: { version: number; totalVersions: number; project: string }; archivePlans?: ArchivedPlan[]; projectRoot?: string; isWSL?: boolean; serverConfig?: { displayName?: string; gitUser?: string }; sessions?: DashboardSession[]; dashboardSession?: DashboardSession; dashboardSettings?: DashboardSettings; reviewCapabilities?: DashboardReviewCapability[] }) => {
         // Initialize config store with server-provided values (config file > cookie > default)
         configStore.init(data.serverConfig);
         // gitUser drives the "Use git name" button in Settings; stays undefined (button hidden) when unavailable
         setGitUser(data.serverConfig?.gitUser);
+        if (data.mode === 'dashboard') {
+          setDashboardMode('dashboard');
+          setDashboardSessions(data.sessions ?? []);
+          setDashboardSettings(data.dashboardSettings ?? null);
+          setReviewCapabilities(data.reviewCapabilities ?? []);
+          if (data.dashboardSettings?.reviewer) {
+            setPlanReviewSettings(data.dashboardSettings.reviewer);
+          }
+          setMarkdown('');
+          setIsApiMode(true);
+          return;
+        }
+        if (data.mode === 'dashboard-session' && data.dashboardSession) {
+          setDashboardMode('session');
+          setDashboardSession(data.dashboardSession);
+          setDashboardSessions(data.sessions ?? []);
+          setDashboardSettings(data.dashboardSettings ?? null);
+          setReviewCapabilities(data.reviewCapabilities ?? []);
+          setPlanReviewComments(data.dashboardSession.reviewComments ?? []);
+          if (data.dashboardSettings?.reviewer) {
+            setPlanReviewSettings(data.dashboardSettings.reviewer);
+          }
+          setMarkdown(data.plan || '');
+          setRepoInfo({ display: data.dashboardSession.project, branch: data.dashboardSession.status });
+        }
         if (data.mode === 'archive') {
           // Archive mode: show first archived plan or clear demo content
           setMarkdown(data.plan || '');
@@ -667,7 +714,7 @@ const App: React.FC = () => {
         if (data.mode === 'annotate-folder') {
           sidebar.open('files');
         }
-        if (data.mode && data.mode !== 'archive') {
+        if (data.mode === 'annotate' || data.mode === 'annotate-last' || data.mode === 'annotate-folder') {
           setAnnotateSource(data.mode === 'annotate-last' ? 'message' : data.mode === 'annotate-folder' ? 'folder' : 'file');
         }
         setSourceInfo(data.sourceInfo ?? undefined);
@@ -939,7 +986,7 @@ const App: React.FC = () => {
         body.feedback = annotationsOutput;
       }
 
-      await fetch('/api/approve', {
+      await fetch(`/api/approve${dashboardSessionQuery}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
@@ -954,11 +1001,11 @@ const App: React.FC = () => {
     setIsSubmitting(true);
     try {
       const planSaveSettings = getPlanSaveSettings();
-      await fetch('/api/deny', {
+      await fetch(`/api/deny${dashboardSessionQuery}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          feedback: annotationsOutput,
+          feedback: `${annotationsOutput}${dashboardOnlyFeedback}`,
           planSave: {
             enabled: planSaveSettings.enabled,
             ...(planSaveSettings.customPath && { customPath: planSaveSettings.customPath }),
@@ -970,6 +1017,57 @@ const App: React.FC = () => {
       setIsSubmitting(false);
     }
   };
+
+  const handleRunPlanReview = async () => {
+    if (!dashboardSession) return;
+    const selectedProvider = reviewCapabilities.find((capability) => capability.id === planReviewSettings.provider);
+    if (selectedProvider && !selectedProvider.available) {
+      setNoteSaveToast({ type: 'error', message: `${selectedProvider.name} is not available on this machine` });
+      setTimeout(() => setNoteSaveToast(null), 3000);
+      return;
+    }
+    setIsRunningPlanReview(true);
+    try {
+      const res = await fetch(`/api/home/review${dashboardSessionQuery}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reviewer: planReviewSettings }),
+      });
+      if (!res.ok) {
+        const errorBody = await res.json().catch(() => null) as { error?: string } | null;
+        throw new Error(errorBody?.error || 'Review failed');
+      }
+      const data = await res.json();
+      if (Array.isArray(data.comments)) {
+        setPlanReviewComments(data.comments);
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Plan review failed';
+      setNoteSaveToast({ type: 'error', message });
+      setTimeout(() => setNoteSaveToast(null), 3000);
+    } finally {
+      setIsRunningPlanReview(false);
+    }
+  };
+
+  const handleEditPlanReviewComment = useCallback((id: string, patch: Partial<DashboardReviewComment>) => {
+    setPlanReviewComments((prev) => prev.map((comment) => (
+      comment.id === id ? { ...comment, ...patch, updatedAt: Date.now() } : comment
+    )));
+  }, []);
+
+  const handleDeletePlanReviewComment = useCallback((id: string) => {
+    setPlanReviewComments((prev) => prev.filter((comment) => comment.id !== id));
+  }, []);
+
+  const dashboardSessionQuery = dashboardSession
+    ? `?session=${encodeURIComponent(dashboardSession.id)}`
+    : '';
+  const dashboardOnlyFeedback = useMemo(() => (
+    dashboardSession ? exportPlanReviewComments(planReviewComments) : ''
+  ), [dashboardSession, planReviewComments]);
+  const planReviewCommentCount = planReviewComments.length;
+  const totalFeedbackCount = allAnnotations.length + editorAnnotations.length + linkedDocHook.docAnnotationCount + globalAttachments.length + planReviewCommentCount;
 
   // Annotate mode handler — sends feedback via /api/feedback
   const handleAnnotateFeedback = async () => {
@@ -1040,7 +1138,7 @@ const App: React.FC = () => {
       const hasDocAnnotations = Array.from(docAnnotations.values()).some(
         (d) => d.annotations.length > 0 || d.globalAttachments.length > 0
       );
-      if (allAnnotations.length === 0 && editorAnnotations.length === 0 && !hasDocAnnotations) {
+      if (allAnnotations.length === 0 && editorAnnotations.length === 0 && !hasDocAnnotations && planReviewCommentCount === 0) {
         // Check if agent exists for OpenCode users
         if (origin === 'opencode') {
           const warning = getAgentWarning();
@@ -1062,7 +1160,7 @@ const App: React.FC = () => {
     showExport, showImport, showFeedbackPrompt, showClaudeCodeWarning, showExitWarning, showAgentWarning,
     showPermissionModeSetup, pendingPasteImage,
     submitted, isSubmitting, isExiting, isApiMode, linkedDocHook.isActive, annotations.length, externalAnnotations.length, annotateMode,
-    origin, getAgentWarning,
+    origin, getAgentWarning, planReviewCommentCount,
   ]);
 
   const handleAddAnnotation = (ann: Annotation) => {
@@ -1359,6 +1457,40 @@ const App: React.FC = () => {
   }, [uiPrefs.planWidth]);
   const annotateReaderMaxWidth = canUseWideMode && wideModeType === 'wide' ? null : planMaxWidth;
 
+  if (dashboardMode === 'dashboard') {
+    return (
+      <ThemeProvider defaultTheme="dark">
+        <HomeDashboard
+          sessions={dashboardSessions}
+          settings={dashboardSettings}
+          reviewCapabilities={reviewCapabilities}
+          onImport={async ({ project, plan }) => {
+            const res = await fetch('/api/home/import', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ project: project || '_unknown', plan }),
+            });
+            if (!res.ok) return;
+            const data = await res.json();
+            if (data.session?.id) {
+              window.location.href = `/?session=${encodeURIComponent(data.session.id)}`;
+            }
+          }}
+          onSaveSettings={async (reviewer) => {
+            const res = await fetch('/api/home/settings', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ reviewer }),
+            });
+            if (!res.ok) return;
+            const settings = await res.json();
+            setDashboardSettings(settings);
+          }}
+        />
+      </ThemeProvider>
+    );
+  }
+
 
   return (
     <ThemeProvider defaultTheme="dark">
@@ -1368,12 +1500,12 @@ const App: React.FC = () => {
         <header data-app-header="true" className="h-12 flex items-center justify-between px-2 md:px-4 border-b border-border/50 bg-card/50 backdrop-blur-xl sticky top-0 z-[50]">
           <div className="flex items-center gap-2 md:gap-3">
             <a
-              href="https://plannotator.ai"
-              target="_blank"
-              rel="noopener noreferrer"
+              href={dashboardSession ? '/' : 'https://plannotator.ai'}
+              target={dashboardSession ? undefined : '_blank'}
+              rel={dashboardSession ? undefined : 'noopener noreferrer'}
               className="flex items-center gap-1.5 md:gap-2 hover:opacity-80 transition-opacity"
             >
-              <span className="text-sm font-semibold tracking-tight">Plannotator</span>
+              <span className="text-sm font-semibold tracking-tight">{dashboardSession ? '< Inbox' : 'Plannotator'}</span>
             </a>
           </div>
 
@@ -1447,7 +1579,7 @@ const App: React.FC = () => {
                       const hasDocAnnotations = Array.from(docAnnotations.values()).some(
                         (d) => d.annotations.length > 0 || d.globalAttachments.length > 0
                       );
-                      if (allAnnotations.length === 0 && editorAnnotations.length === 0 && !hasDocAnnotations) {
+                      if (allAnnotations.length === 0 && editorAnnotations.length === 0 && !hasDocAnnotations && planReviewCommentCount === 0) {
                         setShowFeedbackPrompt(true);
                       } else {
                         handleDeny();
@@ -1463,7 +1595,7 @@ const App: React.FC = () => {
                 {!annotateMode && <div className="relative group/approve">
                   <ApproveButton
                     onClick={() => {
-                      if (origin === 'claude-code' && allAnnotations.length > 0) {
+                      if (origin === 'claude-code' && (allAnnotations.length > 0 || planReviewCommentCount > 0)) {
                         setShowClaudeCodeWarning(true);
                         return;
                       }
@@ -1479,16 +1611,30 @@ const App: React.FC = () => {
                     }}
                     disabled={isSubmitting}
                     isLoading={isSubmitting}
-                    dimmed={(origin === 'claude-code' || origin === 'gemini-cli') && allAnnotations.length > 0}
+                    dimmed={(origin === 'claude-code' || origin === 'gemini-cli') && (allAnnotations.length > 0 || planReviewCommentCount > 0)}
                   />
-                  {(origin === 'claude-code' || origin === 'gemini-cli') && allAnnotations.length > 0 && (
+                  {(origin === 'claude-code' || origin === 'gemini-cli') && (allAnnotations.length > 0 || planReviewCommentCount > 0) && (
                     <div className="absolute top-full right-0 mt-2 px-3 py-2 bg-popover border border-border rounded-lg shadow-xl text-xs text-foreground w-56 text-center opacity-0 invisible group-hover/approve:opacity-100 group-hover/approve:visible transition-all pointer-events-none z-50">
                       <div className="absolute bottom-full right-4 border-4 border-transparent border-b-border" />
                       <div className="absolute bottom-full right-4 mt-px border-4 border-transparent border-b-popover" />
-                      {agentName} doesn't support feedback on approval. Your annotations won't be seen.
+                      {agentName} doesn't support feedback on approval. Your review comments won't be seen.
                     </div>
                   )}
                 </div>}
+
+                {dashboardSession && !annotateMode && (
+                  <button
+                    onClick={() => setPlanReviewMode((prev) => !prev)}
+                    className={`px-2.5 py-1 rounded-md text-xs font-medium transition-all border ${
+                      planReviewMode
+                        ? 'bg-primary/15 text-primary border-primary/30'
+                        : 'bg-muted text-foreground hover:bg-muted/80 border-border'
+                    }`}
+                    title="Toggle source review mode"
+                  >
+                    {planReviewMode ? 'Reader' : 'Review'}
+                  </button>
+                )}
 
                 <div className="w-px h-5 bg-border/50 mx-1 hidden md:block" />
               </>
@@ -1655,7 +1801,7 @@ const App: React.FC = () => {
                   truth there. Hidden in plan diff or archive mode, or when
                   sticky actions are disabled. remountToken re-anchors the
                   ResizeObserver when Viewer swaps content (linked docs). */}
-              {!isPlanDiffActive && !archive.archiveMode && uiPrefs.stickyActionsEnabled && (
+              {!isPlanDiffActive && !archive.archiveMode && !planReviewMode && uiPrefs.stickyActionsEnabled && (
                 <StickyHeaderLane
                   inputMethod={inputMethod}
                   onInputMethodChange={handleInputMethodChange}
@@ -1674,7 +1820,7 @@ const App: React.FC = () => {
               )}
 
               {/* Annotation Toolstrip (hidden during plan diff and archive mode) */}
-              {!isPlanDiffActive && !archive.archiveMode && (
+              {!isPlanDiffActive && !archive.archiveMode && !planReviewMode && (
                 <div data-print-hide className="w-full mb-3 md:mb-4 flex items-center justify-start" style={annotateReaderMaxWidth == null ? undefined : { maxWidth: annotateReaderMaxWidth }}>
                   <AnnotationToolstrip
                     inputMethod={inputMethod}
@@ -1707,8 +1853,22 @@ const App: React.FC = () => {
                   />
                 </div>
               )}
+              {planReviewMode && dashboardSession && (
+                <PlanSourceReview
+                  markdown={markdown}
+                  reviewer={planReviewSettings}
+                  reviewCapabilities={reviewCapabilities}
+                  comments={planReviewComments}
+                  isRunning={isRunningPlanReview}
+                  onReviewerChange={setPlanReviewSettings}
+                  onRunReview={handleRunPlanReview}
+                  onEditComment={handleEditPlanReviewComment}
+                  onDeleteComment={handleDeletePlanReviewComment}
+                  onClose={() => setPlanReviewMode(false)}
+                />
+              )}
               {/* Folder annotation empty state — shown before user picks a file */}
-              {annotateSource === 'folder' && !markdown && !linkedDocHook.isActive && (
+              {!planReviewMode && annotateSource === 'folder' && !markdown && !linkedDocHook.isActive && (
                 <div className="w-full flex justify-center">
                   <div className="w-full max-w-3xl p-12 text-center text-muted-foreground">
                     <p className="text-lg font-medium mb-2">Select a file to annotate</p>
@@ -1717,7 +1877,7 @@ const App: React.FC = () => {
                 </div>
               )}
               {/* Normal Plan View — always mounted, hidden during diff mode */}
-              <div className="w-full flex justify-center relative" style={{ display: (isPlanDiffActive && planDiff.diffBlocks) || (annotateSource === 'folder' && !markdown && !linkedDocHook.isActive) ? 'none' : undefined }}>
+              <div className="w-full flex justify-center relative" style={{ display: planReviewMode || (isPlanDiffActive && planDiff.diffBlocks) || (annotateSource === 'folder' && !markdown && !linkedDocHook.isActive) ? 'none' : undefined }}>
                 {canUseWideMode && !isPlanDiffActive && !archive.archiveMode && (
                   <div
                     data-print-hide
@@ -1790,11 +1950,11 @@ const App: React.FC = () => {
           </OverlayScrollArea>
 
           {/* Resize Handle */}
-          {isPanelOpen && wideModeType === null && <ResizeHandle {...panelResize.handleProps} className="hidden md:block" side="right" />}
+          {isPanelOpen && wideModeType === null && !planReviewMode && <ResizeHandle {...panelResize.handleProps} className="hidden md:block" side="right" />}
 
           {/* Annotation Panel */}
           <AnnotationPanel
-            isOpen={isPanelOpen && wideModeType === null}
+            isOpen={isPanelOpen && wideModeType === null && !planReviewMode}
             blocks={blocks}
             annotations={allAnnotations}
             selectedId={selectedAnnotationId}
@@ -1827,7 +1987,7 @@ const App: React.FC = () => {
           shortUrlError={shortUrlError}
           onGenerateShortUrl={generateShortUrl}
           annotationsOutput={annotationsOutput}
-          annotationCount={allAnnotations.length}
+          annotationCount={allAnnotations.length + planReviewCommentCount}
           taterSprite={taterMode ? <TaterSpritePullup /> : undefined}
           sharingEnabled={sharingEnabled}
           markdown={markdown}
@@ -1861,7 +2021,7 @@ const App: React.FC = () => {
             handleApprove();
           }}
           title="Annotations Won't Be Sent"
-          message={<>{agentName} doesn't yet support feedback on approval. Your {allAnnotations.length} annotation{allAnnotations.length !== 1 ? 's' : ''} will be lost.</>}
+          message={<>{agentName} doesn't yet support feedback on approval. Your {allAnnotations.length + planReviewCommentCount} review item{(allAnnotations.length + planReviewCommentCount) !== 1 ? 's' : ''} will be lost.</>}
           subMessage={
             <>
               To send feedback, use <strong>Send Feedback</strong> instead.
@@ -1888,7 +2048,7 @@ const App: React.FC = () => {
             handleAnnotateExit();
           }}
           title="Annotations Won't Be Sent"
-          message={<>You have {allAnnotations.length + editorAnnotations.length + linkedDocHook.docAnnotationCount + globalAttachments.length} annotation{(allAnnotations.length + editorAnnotations.length + linkedDocHook.docAnnotationCount + globalAttachments.length) !== 1 ? 's' : ''} that will be lost if you close.</>}
+          message={<>You have {totalFeedbackCount} review item{totalFeedbackCount !== 1 ? 's' : ''} that will be lost if you close.</>}
           subMessage="To send your annotations, use Send Annotations instead."
           confirmText="Close Anyway"
           cancelText="Cancel"

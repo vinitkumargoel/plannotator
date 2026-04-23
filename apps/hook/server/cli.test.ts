@@ -19,6 +19,7 @@ describe("CLI top-level help", () => {
     expect(output).toContain("plannotator --help");
     expect(output).toContain("plannotator [--browser <name>]");
     expect(output).toContain("plannotator review [PR_URL]");
+    expect(output).toContain("plannotator home");
     expect(output).toContain("plannotator annotate <file.md | file.html | https://... | folder/>");
     expect(output).toContain("running 'plannotator' without arguments is for hook integration");
   });
@@ -38,6 +39,7 @@ describe("interactive no-arg invocation", () => {
     expect(output).toContain("usually launched automatically by Claude Code hooks");
     expect(output).toContain("It expects hook JSON on stdin.");
     expect(output).toContain("plannotator review");
+    expect(output).toContain("plannotator home");
     expect(output).toContain("plannotator sessions");
     expect(output).toContain("Run 'plannotator --help' for top-level usage.");
   });

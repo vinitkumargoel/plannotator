@@ -52,12 +52,50 @@ Plannotator lets you privately share plans, annotations, and feedback with colle
 
 ## Install
 
+- [Local Checkout / Developer Install](#install-from-a-local-checkout)
 - [Claude Code](#install-for-claude-code)
 - [Copilot CLI](#install-for-copilot-cli)
 - [Gemini CLI](#install-for-gemini-cli)
 - [OpenCode](#install-for-opencode)
 - [Pi](#install-for-pi)
 - [Codex](#install-for-codex)
+
+## Install from a Local Checkout
+
+Use this when you want a machine to run the current repo checkout instead of the published release.
+
+Prerequisites:
+
+- `bun` installed and available on `PATH`
+- a local clone of this repo
+
+From the repo root:
+
+```bash
+bash scripts/install-local.sh
+```
+
+This will:
+
+- build the current workspace artifacts
+- replace `~/.local/bin/plannotator` with a wrapper that runs this checkout
+- point Claude Code's marketplace install at this repo
+- switch OpenCode from `@plannotator/opencode@latest` to a local `file:` plugin spec
+- refresh the Claude/OpenCode command files and clear OpenCode plugin caches
+
+After future local changes, refresh the machine install with either:
+
+```bash
+plannotator-local-update
+```
+
+or:
+
+```bash
+bash scripts/install-local.sh
+```
+
+Restart Claude Code or OpenCode after updating so they reload the local install.
 
 ## Install for Claude Code
 

@@ -629,3 +629,33 @@ export const exportEditorAnnotations = (editorAnnotations: EditorAnnotation[]): 
   return output;
 };
 
+export const exportPlanReviewComments = (comments: Array<{
+  filePath: string;
+  lineStart: number;
+  lineEnd: number;
+  text?: string;
+  severity?: 'important' | 'nit' | 'pre_existing';
+}>): string => {
+  if (comments.length === 0) return '';
+
+  let output = `\n# AI Plan Review\n\nThe following line comments were generated or curated in source review mode.\n\n`;
+
+  comments.forEach((comment, index) => {
+    const lineRange = comment.lineStart === comment.lineEnd
+      ? `line ${comment.lineStart}`
+      : `lines ${comment.lineStart}-${comment.lineEnd}`;
+    const severity = comment.severity
+      ? `${comment.severity.charAt(0).toUpperCase()}${comment.severity.slice(1).replace('_', ' ')}`
+      : 'Comment';
+
+    output += `## ${index + 1}. ${comment.filePath} (${lineRange})\n`;
+    output += `**Severity:** ${severity}\n`;
+    if (comment.text) {
+      output += `> ${comment.text}\n`;
+    }
+    output += `\n`;
+  });
+
+  output += `---\n`;
+  return output;
+};
